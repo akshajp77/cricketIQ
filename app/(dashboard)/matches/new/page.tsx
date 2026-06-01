@@ -80,6 +80,7 @@ export default function NewMatchPage() {
 
   const {
     register,
+    handleSubmit,
     watch,
     setValue,
     getValues,
@@ -120,15 +121,10 @@ export default function NewMatchPage() {
     setStep(step + 1);
   }
 
-  async function handleSave() {
-    // Manually trigger full-form validation, then call onSubmit with the values
-    const ok = await trigger();
-    if (!ok) {
-      toast.error("Please check all required fields before saving");
-      return;
-    }
-    await onSubmit(getValues() as MatchForm);
-  }
+  // handleSubmit runs the Zod resolver (type coercion + validation) and
+  // passes the fully-typed, transformed data to onSubmit — unlike getValues()
+  // which returns raw strings from the inputs.
+  const handleSave = handleSubmit(onSubmit);
 
   async function onSubmit(data: MatchForm) {
     setLoading(true);
