@@ -57,6 +57,7 @@ export default function OnboardingPage() {
       });
       if (res.ok) {
         toast.success("Profile created! Welcome to CricketIQ 🏏");
+        router.refresh();
         router.push("/dashboard");
       } else {
         toast.error("Failed to save profile");

@@ -6,20 +6,18 @@ export default function middleware(req: NextRequest) {
   const isApi = nextUrl.pathname.startsWith("/api");
   const isAuth = nextUrl.pathname.startsWith("/auth");
 
-  // Always allow auth routes
+  // Always allow auth API and auth pages through
   if (isApiAuth || isAuth) return NextResponse.next();
 
-  // Allow all API routes
+  // Always allow API routes (they do their own auth checks)
   if (isApi) return NextResponse.next();
 
-  // Check for session cookie
+  // NextAuth v5 JWT cookie names (authjs.* not next-auth.*)
   const sessionToken =
-    req.cookies.get("next-auth.session-token") ??
-    req.cookies.get("__Secure-next-auth.session-token");
+    req.cookies.get("authjs.session-token") ??
+    req.cookies.get("__Secure-authjs.session-token");
 
-  const isLoggedIn = !!sessionToken;
-
-  if (!isLoggedIn) {
+  if (!sessionToken) {
     return NextResponse.redirect(new URL("/auth/signin", nextUrl));
   }
 

@@ -15,15 +15,7 @@ declare module "next-auth" {
   }
 }
 
-// Lazy-load the adapter so it doesn't break if Prisma isn't ready at import time
-function getAdapter() {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { PrismaAdapter } = require("@auth/prisma-adapter");
-  return PrismaAdapter(prisma);
-}
-
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: getAdapter(),
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
@@ -44,46 +36,50 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!user || !user.password) return null;
 
-        const isValid = await compare(
+        const valid = await compare(
           credentials.password as string,
           user.password
         );
 
-        if (!isValid) return null;
+        if (!valid) return null;
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-        };
+        return { id: user.id, email: user.email, name: user.name, image: user.image };
       },
     }),
   ],
-  session: {
-    strategy: "jwt",
-  },
+  session: { strategy: "jwt" },
   pages: {
     signIn: "/auth/signin",
     newUser: "/auth/onboarding",
   },
   callbacks: {
-    async jwt({ token, user, account }) {
-      // On sign-in, embed the user id into the token
-      if (user) {
+    async jwt({ token, user, account, profile }) {
+      // Credentials login — user object is returned by authorize()
+      if (user?.id) {
         token.id = user.id;
       }
-      // For Google sign-ins, look up the user by email to get their DB id
-      if (account?.provider === "google" && token.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: token.email },
+
+      // Google login — upsert the user in the DB and store their id
+      if (account?.provider === "google" && profile?.email) {
+        const dbUser = await prisma.user.upsert({
+          where: { email: profile.email },
+          create: {
+            email: profile.email,
+            name: profile.name ?? null,
+            image: (profile as { picture?: string }).picture ?? null,
+          },
+          update: {
+            name: profile.name ?? undefined,
+            image: (profile as { picture?: string }).picture ?? undefined,
+          },
         });
-        if (dbUser) token.id = dbUser.id;
+        token.id = dbUser.id;
       }
+
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
+      if (session.user && token.id) {
         session.user.id = token.id as string;
       }
       return session;
