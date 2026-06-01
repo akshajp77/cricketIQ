@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
@@ -8,7 +8,7 @@ import {
   type FullMatch,
 } from "@/lib/stats";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
 
 const SYSTEM_PROMPT = `You are an elite cricket performance coach. Analyze the player's statistics and provide a structured analysis.
 Respond in valid JSON only with this exact structure:
@@ -104,17 +104,17 @@ export async function POST() {
   );
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: userPrompt },
-      ],
-      temperature: 0.7,
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      systemInstruction: SYSTEM_PROMPT,
+      generationConfig: {
+        responseMimeType: "application/json",
+        temperature: 0.7,
+      },
     });
 
-    const raw = completion.choices[0].message.content ?? "{}";
+    const result = await model.generateContent(userPrompt);
+    const raw = result.response.text();
     const parsed = JSON.parse(raw) as {
       strengths: string[];
       weaknesses: string[];
@@ -137,9 +137,9 @@ export async function POST() {
 
     return NextResponse.json(analysis);
   } catch (err) {
-    console.error("OpenAI error:", err);
+    console.error("Gemini error:", err);
     return NextResponse.json(
-      { error: "AI analysis failed. Check your OPENAI_API_KEY and try again." },
+      { error: "AI analysis failed. Check your GEMINI_API_KEY and try again." },
       { status: 500 }
     );
   }
