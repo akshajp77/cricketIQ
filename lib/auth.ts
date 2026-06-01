@@ -15,7 +15,15 @@ declare module "next-auth" {
   }
 }
 
+// Lazy-load the adapter so it doesn't break if Prisma isn't ready at import time
+function getAdapter() {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { PrismaAdapter } = require("@auth/prisma-adapter");
+  return PrismaAdapter(prisma);
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  adapter: getAdapter(),
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
@@ -60,9 +68,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     newUser: "/auth/onboarding",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account, trigger }) {
+      // On sign-in, embed the user id into the token
       if (user) {
         token.id = user.id;
+      }
+      // For Google sign-ins, look up the user by email to get their DB id
+      if (account?.provider === "google" && token.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: token.email },
+        });
+        if (dbUser) token.id = dbUser.id;
       }
       return token;
     },
