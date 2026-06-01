@@ -2,19 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Bot,
-  Sparkles,
-  ChevronDown,
-  ChevronUp,
-  TrendingUp,
-  Target,
-  Dumbbell,
-  Swords,
-  Brain,
-} from "lucide-react";
-import { formatDate } from "@/lib/utils";
 
 interface AIAnalysis {
   id: string;
@@ -24,106 +13,94 @@ interface AIAnalysis {
   improvements: string[];
   trainingPlan: string;
   matchStrategy: string;
-  rating: number;
 }
 
-function AnalysisCard({
-  icon: Icon,
-  title,
-  color,
-  items,
-}: {
-  icon: typeof Bot;
+// ─── Card ──────────────────────────────────────────────────────────────────
+
+interface CardProps {
   title: string;
-  color: string;
+  accent: string;
   items?: string[];
-}) {
+  body?: string;
+}
+
+function AnalysisCard({ title, accent, items, body }: CardProps) {
   return (
-    <div className={`rounded-xl border p-5`} style={{ borderColor: `${color}30`, background: `${color}08` }}>
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `${color}20` }}>
-          <Icon className="w-4 h-4" style={{ color }} />
-        </div>
-        <h3 className="font-semibold text-white text-sm">{title}</h3>
-      </div>
+    <div
+      className="rounded-xl p-5 flex flex-col gap-3"
+      style={{
+        background: `${accent}10`,
+        border: `1px solid ${accent}30`,
+      }}
+    >
+      <p
+        className="text-xs font-semibold uppercase tracking-widest"
+        style={{ color: accent }}
+      >
+        {title}
+      </p>
       {items && (
         <ul className="space-y-2">
           {items.map((item, i) => (
             <li key={i} className="flex items-start gap-2 text-sm text-[#D1D5DB]">
-              <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: color }} />
+              <span
+                className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"
+                style={{ background: accent }}
+              />
               {item}
             </li>
           ))}
         </ul>
       )}
+      {body && <p className="text-sm text-[#D1D5DB] leading-relaxed">{body}</p>}
     </div>
   );
 }
 
-function TrainingCard({ plan }: { plan: string }) {
-  const weeks = plan.split("\n").filter((l) => l.trim());
-  return (
-    <div className="rounded-xl border border-[#F59E0B]/30 bg-[#F59E0B]/05 p-5">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-7 h-7 rounded-lg bg-[#F59E0B]/20 flex items-center justify-center">
-          <Dumbbell className="w-4 h-4 text-[#F59E0B]" />
-        </div>
-        <h3 className="font-semibold text-white text-sm">Training Recommendations</h3>
-      </div>
-      <div className="space-y-2">
-        {weeks.map((week, i) => (
-          <div key={i} className="text-sm text-[#D1D5DB] flex items-start gap-2">
-            <span className="text-[#F59E0B] font-mono text-xs mt-0.5 flex-shrink-0">
-              {week.startsWith("Week") ? "›" : " "}
-            </span>
-            {week}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+// ─── History item ──────────────────────────────────────────────────────────
 
-function PastAnalysis({ analysis }: { analysis: AIAnalysis }) {
-  const [expanded, setExpanded] = useState(false);
+function HistoryItem({ analysis }: { analysis: AIAnalysis }) {
+  const [open, setOpen] = useState(false);
+  const date = new Date(analysis.createdAt).toLocaleString("en-GB", {
+    day: "numeric", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  });
+
   return (
     <div className="rounded-xl border border-[#1F2937] bg-[#111827] overflow-hidden">
       <button
-        className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#1F2937]/40 transition-colors"
-        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#1F2937]/50 transition-colors text-left"
+        onClick={() => setOpen(!open)}
       >
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#00D4AA]/10 flex items-center justify-center">
-            <Brain className="w-4 h-4 text-[#00D4AA]" />
-          </div>
-          <div className="text-left">
-            <p className="text-sm font-medium text-white">Analysis Report</p>
-            <p className="text-xs text-[#6B7280]">{formatDate(analysis.createdAt)} · Rating: {analysis.rating.toFixed(1)}</p>
-          </div>
+        <div>
+          <p className="text-sm font-medium text-white">{date}</p>
+          <p className="text-xs text-[#6B7280] mt-0.5 truncate max-w-xs">
+            {analysis.strengths[0] ?? "—"}
+          </p>
         </div>
-        {expanded ? <ChevronUp className="w-4 h-4 text-[#6B7280]" /> : <ChevronDown className="w-4 h-4 text-[#6B7280]" />}
+        {open ? (
+          <ChevronUp className="w-4 h-4 text-[#6B7280] shrink-0" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-[#6B7280] shrink-0" />
+        )}
       </button>
-      {expanded && (
-        <div className="px-5 pb-5 space-y-4 border-t border-[#1F2937]">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <AnalysisCard icon={TrendingUp} title="Strengths" color="#00D4AA" items={analysis.strengths} />
-            <AnalysisCard icon={Target} title="Areas to Improve" color="#F59E0B" items={analysis.weaknesses} />
-          </div>
-          <TrainingCard plan={analysis.trainingPlan} />
-          <div className="rounded-xl border border-[#8B5CF6]/30 bg-[#8B5CF6]/05 p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-lg bg-[#8B5CF6]/20 flex items-center justify-center">
-                <Swords className="w-4 h-4 text-[#8B5CF6]" />
-              </div>
-              <h3 className="font-semibold text-white text-sm">Next Match Strategy</h3>
-            </div>
-            <p className="text-sm text-[#D1D5DB] leading-relaxed">{analysis.matchStrategy}</p>
+
+      {open && (
+        <div className="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-[#1F2937]">
+          <div className="pt-4 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <AnalysisCard title="Strengths" accent="#10B981" items={analysis.strengths} />
+            <AnalysisCard title="Weaknesses" accent="#EF4444" items={analysis.weaknesses} />
+            <AnalysisCard title="How to Improve" accent="#F59E0B" items={analysis.improvements} />
+            <AnalysisCard title="Training Plan" accent="#00D4AA" body={analysis.trainingPlan} />
+            <AnalysisCard title="Match Strategy" accent="#00D4AA" body={analysis.matchStrategy} />
           </div>
         </div>
       )}
     </div>
   );
 }
+
+// ─── Main page ─────────────────────────────────────────────────────────────
 
 export default function AICoachPage() {
   const [loading, setLoading] = useState(false);
@@ -133,11 +110,11 @@ export default function AICoachPage() {
   useEffect(() => {
     fetch("/api/ai-coach")
       .then((r) => {
-        if (!r.ok) throw new Error("Failed to load analyses");
+        if (!r.ok) throw new Error();
         return r.json();
       })
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
+      .then((data: AIAnalysis[]) => {
+        if (data.length > 0) {
           setCurrent(data[0]);
           setHistory(data);
         }
@@ -147,127 +124,100 @@ export default function AICoachPage() {
 
   async function handleAnalyze() {
     setLoading(true);
-    setCurrent(null);
     try {
       const res = await fetch("/api/ai-coach", { method: "POST" });
       const data = await res.json();
-      if (res.ok) {
-        setCurrent(data);
-        setHistory((h) => [data, ...h.filter((x) => x.id !== data.id)]);
-        toast.success("Analysis complete!");
-      } else {
+      if (!res.ok) {
         toast.error(data.error ?? "Analysis failed");
+        return;
       }
+      setCurrent(data);
+      setHistory((prev) => [data, ...prev.filter((x) => x.id !== data.id)]);
+      toast.success("Analysis complete!");
+    } catch {
+      toast.error("Network error — please try again");
     } finally {
       setLoading(false);
     }
   }
 
+  const pastAnalyses = current ? history.filter((h) => h.id !== current.id) : history;
+
   return (
-    <div className="p-6 max-w-4xl space-y-6">
-      {/* Hero section with AI Orb */}
-      <div className="relative rounded-2xl border border-[#1F2937] bg-gradient-to-br from-[#111827] to-[#0A0F1E] overflow-hidden p-8">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full opacity-10 animate-pulse-slow" style={{ background: "radial-gradient(circle, #00D4AA 0%, transparent 70%)" }} />
+    <div className="p-6 max-w-5xl space-y-8">
+
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-[#00D4AA]" />
+            <h2 className="text-2xl font-bold text-white">AI Coach</h2>
+          </div>
+          <p className="text-sm text-[#6B7280] mt-0.5">Powered by GPT-4o</p>
         </div>
 
-        <div className="relative z-10 flex flex-col items-center text-center gap-6">
-          {/* AI Orb */}
-          <div className="relative">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#00D4AA] to-[#0093A8] flex items-center justify-center shadow-lg shadow-[#00D4AA]/40 animate-pulse-slow">
-              <Bot className="w-12 h-12 text-[#0A0F1E]" />
-            </div>
-            {/* Orbiting ring */}
-            <div className="absolute inset-0 rounded-full border-2 border-[#00D4AA]/30 animate-spin" style={{ animationDuration: "8s" }} />
-            <div className="absolute inset-[-8px] rounded-full border border-[#00D4AA]/15 animate-spin" style={{ animationDuration: "12s", animationDirection: "reverse" }} />
-          </div>
-
-          <div>
-            <h2 className="text-2xl font-bold text-white">AI Performance Coach</h2>
-            <p className="text-[#9CA3AF] mt-2 max-w-lg">
-              Our AI analyzes your complete match history, identifies patterns, and generates a personalized coaching plan to elevate your game.
-            </p>
-          </div>
-
-          <Button
-            onClick={handleAnalyze}
-            disabled={loading}
-            className="bg-[#00D4AA] text-[#0A0F1E] hover:bg-[#00D4AA]/90 font-semibold text-base px-8 py-6"
-            size="lg"
-          >
-            {loading ? (
-              <>
-                <div className="w-5 h-5 border-2 border-[#0A0F1E] border-t-transparent rounded-full animate-spin mr-2" />
-                Analyzing Performance...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-5 h-5 mr-2" />
-                Analyze My Performance
-              </>
-            )}
-          </Button>
-        </div>
+        <Button
+          onClick={handleAnalyze}
+          disabled={loading}
+          className="bg-[#00D4AA] text-[#0A0F1E] hover:bg-[#00D4AA]/90 font-semibold px-6"
+          size="lg"
+        >
+          {loading ? (
+            <>
+              <div className="w-4 h-4 border-2 border-[#0A0F1E]/40 border-t-[#0A0F1E] rounded-full animate-spin mr-2" />
+              Analyzing your performance...
+            </>
+          ) : (
+            <>
+              🏏 Analyze My Performance
+            </>
+          )}
+        </Button>
       </div>
 
-      {/* Current Analysis */}
-      {loading && (
-        <div className="rounded-2xl border border-[#1F2937] bg-[#111827] p-8">
-          <div className="flex flex-col items-center gap-4">
-            {/* Spinning cricket ball animation */}
-            <div className="relative w-16 h-16">
-              <div className="w-16 h-16 rounded-full border-4 border-[#00D4AA]/30 animate-spin border-t-[#00D4AA]" />
-              <div className="absolute inset-0 flex items-center justify-center text-2xl">🏏</div>
-            </div>
-            <p className="text-white font-medium">Analyzing your cricket data...</p>
-            <p className="text-[#6B7280] text-sm">Reviewing match history, trends, and patterns</p>
-          </div>
-        </div>
-      )}
-
+      {/* ── Current result ── */}
       {current && !loading && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-white">Latest Analysis</h3>
-            <span className="text-xs text-[#6B7280]">{formatDate(current.createdAt)}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <AnalysisCard title="Strengths" accent="#10B981" items={current.strengths} />
+            <AnalysisCard title="Weaknesses" accent="#EF4444" items={current.weaknesses} />
+            <AnalysisCard title="How to Improve" accent="#F59E0B" items={current.improvements} />
+            <AnalysisCard title="Training Plan" accent="#00D4AA" body={current.trainingPlan} />
+            <AnalysisCard title="Match Strategy" accent="#00D4AA" body={current.matchStrategy} />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <AnalysisCard icon={TrendingUp} title="Strengths" color="#00D4AA" items={current.strengths} />
-            <AnalysisCard icon={Target} title="Areas to Improve" color="#F59E0B" items={current.weaknesses} />
-          </div>
-
-          <AnalysisCard icon={Sparkles} title="Improvement Recommendations" color="#8B5CF6" items={current.improvements} />
-
-          <TrainingCard plan={current.trainingPlan} />
-
-          <div className="rounded-xl border border-[#EC4899]/30 bg-[#EC4899]/05 p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-lg bg-[#EC4899]/20 flex items-center justify-center">
-                <Swords className="w-4 h-4 text-[#EC4899]" />
-              </div>
-              <h3 className="font-semibold text-white text-sm">Next Match Strategy</h3>
-            </div>
-            <p className="text-sm text-[#D1D5DB] leading-relaxed">{current.matchStrategy}</p>
-          </div>
+          <p className="text-xs text-[#6B7280]">
+            Last analyzed:{" "}
+            {new Date(current.createdAt).toLocaleString("en-GB", {
+              day: "numeric", month: "short", year: "numeric",
+              hour: "2-digit", minute: "2-digit",
+            })}
+          </p>
         </div>
       )}
 
-      {/* Analysis History */}
-      {history.length > 1 && (
+      {/* ── Empty state ── */}
+      {!current && !loading && (
+        <div className="rounded-xl border border-[#1F2937] bg-[#111827] p-12 text-center">
+          <Sparkles className="w-10 h-10 text-[#00D4AA]/40 mx-auto mb-3" />
+          <p className="text-white font-medium">No analysis yet</p>
+          <p className="text-sm text-[#6B7280] mt-1">
+            Click &ldquo;Analyze My Performance&rdquo; to get your first AI coaching report.
+          </p>
+        </div>
+      )}
+
+      {/* ── History ── */}
+      {pastAnalyses.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-white">Analysis History</h3>
+          <p className="text-sm font-medium text-[#6B7280] uppercase tracking-wider">
+            Previous Analyses
+          </p>
           <div className="space-y-2">
-            {history.slice(1).map((analysis) => (
-              <PastAnalysis key={analysis.id} analysis={analysis} />
+            {pastAnalyses.map((a) => (
+              <HistoryItem key={a.id} analysis={a} />
             ))}
           </div>
-        </div>
-      )}
-
-      {history.length === 0 && !loading && !current && (
-        <div className="text-center py-8 text-[#6B7280] text-sm">
-          No analyses yet. Click &quot;Analyze My Performance&quot; to get started.
         </div>
       )}
     </div>
