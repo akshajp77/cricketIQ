@@ -68,7 +68,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     newUser: "/auth/onboarding",
   },
   callbacks: {
-    async jwt({ token, user, account, trigger }) {
+    async jwt({ token, user, account }) {
       // On sign-in, embed the user id into the token
       if (user) {
         token.id = user.id;
