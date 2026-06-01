@@ -8,8 +8,6 @@ import {
   type FullMatch,
 } from "@/lib/stats";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
-
 const SYSTEM_PROMPT = `You are an elite cricket performance coach. Analyze the player's statistics and provide a structured analysis.
 Respond in valid JSON only with this exact structure:
 {
@@ -35,9 +33,11 @@ function buildUserPrompt(
         (m.bowling?.overs ?? 0) > 0
           ? ((m.bowling?.runsConceded ?? 0) / (m.bowling?.overs ?? 1)).toFixed(2)
           : "N/A";
-      return `${i + 1}. vs ${m.opponent} (${m.format}, ${m.result}): ` +
+      return (
+        `${i + 1}. vs ${m.opponent} (${m.format}, ${m.result}): ` +
         `Bat ${m.batting?.runs ?? 0}(${m.batting?.balls ?? 0}) ${m.batting?.dismissalType ?? ""} | ` +
-        `Bowl ${m.bowling?.wickets ?? 0}/${m.bowling?.runsConceded ?? 0} in ${m.bowling?.overs ?? 0} ov (eco ${eco})`;
+        `Bowl ${m.bowling?.wickets ?? 0}/${m.bowling?.runsConceded ?? 0} in ${m.bowling?.overs ?? 0} ov (eco ${eco})`
+      );
     })
     .join("\n");
 
@@ -57,13 +57,35 @@ ${matchLines}
 
 FORM
 Last-5 batting average: ${last5Avg.toFixed(2)} vs career average: ${batting.battingAvg.toFixed(2)}
-Trend: ${last5Avg > batting.battingAvg * 1.05 ? "Improving" : last5Avg < batting.battingAvg * 0.95 ? "Below par" : "Consistent"}`;
+Trend: ${
+    last5Avg > batting.battingAvg * 1.05
+      ? "Improving"
+      : last5Avg < batting.battingAvg * 0.95
+      ? "Below par"
+      : "Consistent"
+  }`;
+}
+
+// Strip markdown code fences if Gemini wraps JSON in ```json ... ```
+function extractJson(text: string): string {
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenced) return fenced[1].trim();
+  return text.trim();
 }
 
 export async function POST() {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Check API key before making any calls
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: "GEMINI_API_KEY is not set. Add it to your environment variables." },
+      { status: 500 }
+    );
   }
 
   const matches = await prisma.match.findMany({
@@ -88,7 +110,8 @@ export async function POST() {
   const last5Innings = last5.filter(
     (m) => m.batting?.dismissalType !== "Did Not Bat"
   ).length;
-  const last5Avg = last5Innings > 0 ? last5Runs / last5Innings : batting.battingAvg;
+  const last5Avg =
+    last5Innings > 0 ? last5Runs / last5Innings : batting.battingAvg;
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -103,46 +126,61 @@ export async function POST() {
     last5Avg
   );
 
+  // Initialise inside the handler so env vars are guaranteed to be loaded
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+    systemInstruction: SYSTEM_PROMPT,
+    generationConfig: {
+      responseMimeType: "application/json",
+      temperature: 0.7,
+    },
+  });
+
+  let raw: string;
   try {
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
-      systemInstruction: SYSTEM_PROMPT,
-      generationConfig: {
-        responseMimeType: "application/json",
-        temperature: 0.7,
-      },
-    });
-
     const result = await model.generateContent(userPrompt);
-    const raw = result.response.text();
-    const parsed = JSON.parse(raw) as {
-      strengths: string[];
-      weaknesses: string[];
-      improvements: string[];
-      trainingPlan: string;
-      matchStrategy: string;
-    };
-
-    const analysis = await prisma.aIAnalysis.create({
-      data: {
-        userId: session.user.id,
-        strengths: parsed.strengths ?? [],
-        weaknesses: parsed.weaknesses ?? [],
-        improvements: parsed.improvements ?? [],
-        trainingPlan: parsed.trainingPlan ?? "",
-        matchStrategy: parsed.matchStrategy ?? "",
-        rating: 0,
-      },
-    });
-
-    return NextResponse.json(analysis);
+    raw = result.response.text();
   } catch (err) {
-    console.error("Gemini error:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("Gemini API error:", message);
     return NextResponse.json(
-      { error: "AI analysis failed. Check your GEMINI_API_KEY and try again." },
+      { error: `Gemini API error: ${message}` },
       { status: 500 }
     );
   }
+
+  let parsed: {
+    strengths: string[];
+    weaknesses: string[];
+    improvements: string[];
+    trainingPlan: string;
+    matchStrategy: string;
+  };
+
+  try {
+    parsed = JSON.parse(extractJson(raw));
+  } catch {
+    console.error("Failed to parse Gemini response:", raw);
+    return NextResponse.json(
+      { error: "Gemini returned an unexpected response format. Please try again." },
+      { status: 500 }
+    );
+  }
+
+  const analysis = await prisma.aIAnalysis.create({
+    data: {
+      userId: session.user.id,
+      strengths: parsed.strengths ?? [],
+      weaknesses: parsed.weaknesses ?? [],
+      improvements: parsed.improvements ?? [],
+      trainingPlan: parsed.trainingPlan ?? "",
+      matchStrategy: parsed.matchStrategy ?? "",
+      rating: 0,
+    },
+  });
+
+  return NextResponse.json(analysis);
 }
 
 export async function GET() {
