@@ -80,7 +80,6 @@ export default function NewMatchPage() {
 
   const {
     register,
-    handleSubmit,
     watch,
     setValue,
     getValues,
@@ -119,6 +118,16 @@ export default function NewMatchPage() {
       }
     }
     setStep(step + 1);
+  }
+
+  async function handleSave() {
+    // Manually trigger full-form validation, then call onSubmit with the values
+    const ok = await trigger();
+    if (!ok) {
+      toast.error("Please check all required fields before saving");
+      return;
+    }
+    await onSubmit(getValues() as MatchForm);
   }
 
   async function onSubmit(data: MatchForm) {
@@ -199,7 +208,7 @@ export default function NewMatchPage() {
         })}
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={(e) => e.preventDefault()}>
         <div className="glass rounded-2xl p-6 space-y-4">
 
           {/* Step 1: Match Info */}
@@ -422,7 +431,8 @@ export default function NewMatchPage() {
             </Button>
           ) : (
             <Button
-              type="submit"
+              type="button"
+              onClick={handleSave}
               disabled={loading}
               className="bg-[#00D4AA] text-[#0A0F1E] hover:bg-[#00D4AA]/90 font-semibold"
             >
