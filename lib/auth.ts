@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
+import { compare } from "bcryptjs";
 import { prisma } from "./prisma";
 
 declare module "next-auth" {
@@ -44,7 +44,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!user || !user.password) return null;
 
-        const isValid = await bcrypt.compare(
+        const isValid = await compare(
           credentials.password as string,
           user.password
         );
