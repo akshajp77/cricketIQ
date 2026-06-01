@@ -83,14 +83,20 @@ export default function MatchesPage() {
 
   const fetchMatches = useCallback(async () => {
     setLoading(true);
-    const params = new URLSearchParams({ page: String(page), limit: "15" });
-    if (search) params.set("opponent", search);
-    if (format !== "all") params.set("format", format);
-    const res = await fetch(`/api/matches?${params}`);
-    const data = await res.json();
-    setMatches(data.matches ?? []);
-    setTotal(data.total ?? 0);
-    setLoading(false);
+    try {
+      const params = new URLSearchParams({ page: String(page), limit: "15" });
+      if (search) params.set("opponent", search);
+      if (format !== "all") params.set("format", format);
+      const res = await fetch(`/api/matches?${params}`);
+      if (!res.ok) throw new Error("Failed to load matches");
+      const data = await res.json();
+      setMatches(data.matches ?? []);
+      setTotal(data.total ?? 0);
+    } catch {
+      toast.error("Failed to load matches");
+    } finally {
+      setLoading(false);
+    }
   }, [page, search, format]);
 
   useEffect(() => { fetchMatches(); }, [fetchMatches]);

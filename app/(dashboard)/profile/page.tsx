@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ interface RatingData {
 }
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [ratingData, setRatingData] = useState<RatingData | null>(null);
   const [editing, setEditing] = useState(false);
@@ -35,45 +37,60 @@ export default function ProfilePage() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/profile").then((r) => r.json()),
-      fetch("/api/rating").then((r) => r.json()),
-    ]).then(([p, r]) => {
-      setProfileData(p);
-      setRatingData(r);
-      setForm({
-        name: p.user?.name ?? "",
-        age: p.profile?.age?.toString() ?? "",
-        battingStyle: p.profile?.battingStyle ?? "",
-        bowlingStyle: p.profile?.bowlingStyle ?? "",
-        teamName: p.profile?.teamName ?? "",
-        bio: p.profile?.bio ?? "",
-      });
-    });
+      fetch("/api/profile").then((r) => {
+        if (!r.ok) throw new Error("Failed to load profile");
+        return r.json();
+      }),
+      fetch("/api/rating").then((r) => {
+        if (!r.ok) throw new Error("Failed to load rating");
+        return r.json();
+      }),
+    ])
+      .then(([p, r]) => {
+        setProfileData(p);
+        setRatingData(r);
+        setForm({
+          name: p.user?.name ?? "",
+          age: p.profile?.age?.toString() ?? "",
+          battingStyle: p.profile?.battingStyle ?? "",
+          bowlingStyle: p.profile?.bowlingStyle ?? "",
+          teamName: p.profile?.teamName ?? "",
+          bio: p.profile?.bio ?? "",
+        });
+      })
+      .catch(() => toast.error("Failed to load profile data"));
   }, []);
 
   async function handleSave() {
     setSaving(true);
-    const res = await fetch("/api/profile", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: form.name,
-        age: form.age ? parseInt(form.age) : undefined,
-        battingStyle: form.battingStyle,
-        bowlingStyle: form.bowlingStyle,
-        teamName: form.teamName,
-        bio: form.bio,
-      }),
-    });
-    if (res.ok) {
-      const updated = await res.json();
-      setProfileData((p) => p ? { ...p, user: updated.user, profile: updated.profile } : p);
-      setEditing(false);
-      toast.success("Profile updated!");
-    } else {
-      toast.error("Failed to update profile");
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          age: form.age ? parseInt(form.age) : undefined,
+          battingStyle: form.battingStyle,
+          bowlingStyle: form.bowlingStyle,
+          teamName: form.teamName,
+          bio: form.bio,
+        }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setProfileData((p) => p ? { ...p, user: updated.user, profile: updated.profile } : p);
+        setEditing(false);
+        toast.success("Profile updated!");
+        // Refresh server components so sidebar name/team updates immediately
+        router.refresh();
+      } else {
+        toast.error("Failed to update profile");
+      }
+    } catch {
+      toast.error("Network error — please try again");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   }
 
   if (!profileData) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import {
   AreaChart, Area,
   LineChart, Line,
@@ -54,10 +55,16 @@ export default function AnalyticsPage() {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const res = await fetch(`/api/analytics?last=${filter}`);
-      const json = await res.json();
-      setData(json);
-      setLoading(false);
+      try {
+        const res = await fetch(`/api/analytics?last=${filter}`);
+        if (!res.ok) throw new Error("Failed to load analytics");
+        const json = await res.json();
+        setData(json);
+      } catch {
+        toast.error("Failed to load analytics");
+      } finally {
+        setLoading(false);
+      }
     }
     load();
   }, [filter]);

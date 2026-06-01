@@ -131,12 +131,18 @@ export default function AICoachPage() {
   const [history, setHistory] = useState<AIAnalysis[]>([]);
 
   useEffect(() => {
-    fetch("/api/ai-coach").then((r) => r.json()).then((data) => {
-      if (Array.isArray(data) && data.length > 0) {
-        setCurrent(data[0]);
-        setHistory(data);
-      }
-    });
+    fetch("/api/ai-coach")
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to load analyses");
+        return r.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setCurrent(data[0]);
+          setHistory(data);
+        }
+      })
+      .catch(() => toast.error("Failed to load analysis history"));
   }, []);
 
   async function handleAnalyze() {

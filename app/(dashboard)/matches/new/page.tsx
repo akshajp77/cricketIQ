@@ -35,21 +35,25 @@ const matchSchema = z.object({
   format: z.string().min(1, "Format is required"),
   result: z.string().min(1, "Result is required"),
   notes: z.string().optional(),
-  runs: z.coerce.number().min(0),
-  balls: z.coerce.number().min(0),
-  fours: z.coerce.number().min(0),
-  sixes: z.coerce.number().min(0),
-  dismissalType: z.string(),
-  position: z.coerce.number().min(1).max(11).optional(),
-  overs: z.coerce.number().min(0),
-  runsConceded: z.coerce.number().min(0),
-  wickets: z.coerce.number().min(0),
-  maidens: z.coerce.number().min(0),
-  wides: z.coerce.number().min(0),
-  noBalls: z.coerce.number().min(0),
-  catches: z.coerce.number().min(0),
-  runOuts: z.coerce.number().min(0),
-  stumpings: z.coerce.number().min(0),
+  runs: z.coerce.number().min(0).default(0),
+  balls: z.coerce.number().min(0).default(0),
+  fours: z.coerce.number().min(0).default(0),
+  sixes: z.coerce.number().min(0).default(0),
+  dismissalType: z.string().default("Did Not Bat"),
+  // empty string → undefined so optional().min() doesn't break
+  position: z.preprocess(
+    (v) => (v === "" || v === undefined || v === null ? undefined : Number(v)),
+    z.number().min(1).max(11).optional()
+  ),
+  overs: z.coerce.number().min(0).default(0),
+  runsConceded: z.coerce.number().min(0).default(0),
+  wickets: z.coerce.number().min(0).default(0),
+  maidens: z.coerce.number().min(0).default(0),
+  wides: z.coerce.number().min(0).default(0),
+  noBalls: z.coerce.number().min(0).default(0),
+  catches: z.coerce.number().min(0).default(0),
+  runOuts: z.coerce.number().min(0).default(0),
+  stumpings: z.coerce.number().min(0).default(0),
 });
 
 type MatchForm = z.infer<typeof matchSchema>;
@@ -62,6 +66,13 @@ const STEPS = [
   { id: 5, title: "Review", icon: CheckCircle },
 ];
 
+const STEP_FIELDS: Record<number, (keyof MatchForm)[]> = {
+  1: ["opponent", "date", "format", "result"],
+  2: ["runs", "balls", "fours", "sixes", "dismissalType"],
+  3: ["overs", "runsConceded", "wickets", "maidens", "wides", "noBalls"],
+  4: ["catches", "runOuts", "stumpings"],
+};
+
 export default function NewMatchPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -73,11 +84,17 @@ export default function NewMatchPage() {
     watch,
     setValue,
     getValues,
+    trigger,
     formState: { errors },
   } = useForm<MatchForm>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(matchSchema) as unknown as import("react-hook-form").Resolver<MatchForm>,
+    resolver: zodResolver(matchSchema) as never,
     defaultValues: {
+      opponent: "",
+      date: "",
+      venue: "",
+      format: "",
+      result: "",
+      notes: "",
       runs: 0, balls: 0, fours: 0, sixes: 0,
       dismissalType: "Did Not Bat",
       overs: 0, runsConceded: 0, wickets: 0, maidens: 0, wides: 0, noBalls: 0,
@@ -89,6 +106,21 @@ export default function NewMatchPage() {
   const watchRunsConceded = watch("runsConceded");
   const economy = watchOvers > 0 ? (watchRunsConceded / watchOvers).toFixed(2) : "—";
 
+  async function goNext() {
+    const fields = STEP_FIELDS[step];
+    if (fields) {
+      const ok = await trigger(fields);
+      if (!ok) {
+        const stepErrors = fields.filter((f) => errors[f]);
+        if (stepErrors.length) {
+          toast.error(`Please fill in: ${stepErrors.join(", ")}`);
+          return;
+        }
+      }
+    }
+    setStep(step + 1);
+  }
+
   async function onSubmit(data: MatchForm) {
     setLoading(true);
     try {
@@ -97,18 +129,34 @@ export default function NewMatchPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           matchInfo: {
-            opponent: data.opponent, date: data.date, venue: data.venue,
-            format: data.format, result: data.result, notes: data.notes,
+            opponent: data.opponent,
+            date: data.date,
+            venue: data.venue,
+            format: data.format,
+            result: data.result,
+            notes: data.notes,
           },
           batting: {
-            runs: data.runs, balls: data.balls, fours: data.fours, sixes: data.sixes,
-            dismissalType: data.dismissalType, position: data.position,
+            runs: data.runs,
+            balls: data.balls,
+            fours: data.fours,
+            sixes: data.sixes,
+            dismissalType: data.dismissalType,
+            position: data.position,
           },
           bowling: {
-            overs: data.overs, runsConceded: data.runsConceded, wickets: data.wickets,
-            maidens: data.maidens, wides: data.wides, noBalls: data.noBalls,
+            overs: data.overs,
+            runsConceded: data.runsConceded,
+            wickets: data.wickets,
+            maidens: data.maidens,
+            wides: data.wides,
+            noBalls: data.noBalls,
           },
-          fielding: { catches: data.catches, runOuts: data.runOuts, stumpings: data.stumpings },
+          fielding: {
+            catches: data.catches,
+            runOuts: data.runOuts,
+            stumpings: data.stumpings,
+          },
         }),
       });
       const json = await res.json();
@@ -118,6 +166,8 @@ export default function NewMatchPage() {
       } else {
         toast.error(json.error ?? "Failed to save match");
       }
+    } catch {
+      toast.error("Network error — please try again");
     } finally {
       setLoading(false);
     }
@@ -127,7 +177,7 @@ export default function NewMatchPage() {
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
-      {/* Steps */}
+      {/* Step indicators */}
       <div className="flex items-center justify-between mb-8 overflow-x-auto">
         {STEPS.map((s, i) => {
           const Icon = s.icon;
@@ -149,8 +199,9 @@ export default function NewMatchPage() {
         })}
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit as Parameters<typeof handleSubmit>[0])}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div className="glass rounded-2xl p-6 space-y-4">
+
           {/* Step 1: Match Info */}
           {step === 1 && (
             <>
@@ -164,10 +215,14 @@ export default function NewMatchPage() {
                 <div className="space-y-1.5">
                   <Label>Date *</Label>
                   <Input type="date" {...register("date")} max={new Date().toISOString().split("T")[0]} />
+                  {errors.date && <p className="text-xs text-red-400">{errors.date.message}</p>}
                 </div>
                 <div className="space-y-1.5">
                   <Label>Format *</Label>
-                  <Select onValueChange={(v) => setValue("format", v)} defaultValue="">
+                  <Select
+                    value={watch("format")}
+                    onValueChange={(v) => setValue("format", v, { shouldValidate: true })}
+                  >
                     <SelectTrigger><SelectValue placeholder="Select format" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="T20">T20</SelectItem>
@@ -176,10 +231,14 @@ export default function NewMatchPage() {
                       <SelectItem value="Custom">Custom</SelectItem>
                     </SelectContent>
                   </Select>
+                  {errors.format && <p className="text-xs text-red-400">{errors.format.message}</p>}
                 </div>
                 <div className="space-y-1.5">
                   <Label>Result *</Label>
-                  <Select onValueChange={(v) => setValue("result", v)} defaultValue="">
+                  <Select
+                    value={watch("result")}
+                    onValueChange={(v) => setValue("result", v, { shouldValidate: true })}
+                  >
                     <SelectTrigger><SelectValue placeholder="Select result" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Won">Won</SelectItem>
@@ -188,6 +247,7 @@ export default function NewMatchPage() {
                       <SelectItem value="No Result">No Result</SelectItem>
                     </SelectContent>
                   </Select>
+                  {errors.result && <p className="text-xs text-red-400">{errors.result.message}</p>}
                 </div>
                 <div className="space-y-1.5">
                   <Label>Venue</Label>
@@ -224,7 +284,10 @@ export default function NewMatchPage() {
                 </div>
                 <div className="space-y-1.5">
                   <Label>Dismissal</Label>
-                  <Select onValueChange={(v) => setValue("dismissalType", v)} defaultValue="Did Not Bat">
+                  <Select
+                    value={watch("dismissalType")}
+                    onValueChange={(v) => setValue("dismissalType", v)}
+                  >
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {["Bowled", "LBW", "Caught", "Run Out", "Stumped", "Not Out", "Did Not Bat", "Hit Wicket", "Handled Ball"].map((d) => (
@@ -310,7 +373,7 @@ export default function NewMatchPage() {
           {/* Step 5: Review */}
           {step === 5 && (
             <>
-              <h2 className="text-lg font-semibold text-white">Review & Save</h2>
+              <h2 className="text-lg font-semibold text-white">Review &amp; Save</h2>
               <div className="space-y-3">
                 <ReviewRow label="Match" value={`vs ${values.opponent} · ${values.format} · ${values.result}`} />
                 <ReviewRow label="Date" value={values.date} />
@@ -337,17 +400,32 @@ export default function NewMatchPage() {
 
         {/* Navigation */}
         <div className="flex justify-between mt-6">
-          <Button type="button" variant="ghost" onClick={() => step > 1 && setStep(step - 1)} disabled={step === 1} className="text-[#6B7280]">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => step > 1 && setStep(step - 1)}
+            disabled={step === 1}
+            className="text-[#6B7280]"
+          >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back
           </Button>
+
           {step < 5 ? (
-            <Button type="button" onClick={() => setStep(step + 1)} className="bg-[#00D4AA] text-[#0A0F1E] hover:bg-[#00D4AA]/90 font-semibold">
+            <Button
+              type="button"
+              onClick={goNext}
+              className="bg-[#00D4AA] text-[#0A0F1E] hover:bg-[#00D4AA]/90 font-semibold"
+            >
               Next
               <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
-            <Button type="submit" disabled={loading} className="bg-[#00D4AA] text-[#0A0F1E] hover:bg-[#00D4AA]/90 font-semibold">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="bg-[#00D4AA] text-[#0A0F1E] hover:bg-[#00D4AA]/90 font-semibold"
+            >
               {loading ? "Saving..." : "Save Match"}
               <Trophy className="w-4 h-4 ml-1" />
             </Button>

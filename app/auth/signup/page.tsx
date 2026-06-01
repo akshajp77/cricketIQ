@@ -36,8 +36,9 @@ export default function SignUpPage() {
         toast.error(data.error ?? "Failed to create account");
         return;
       }
-      // Sign in immediately
+      // Sign in immediately then clear server cache before navigating
       await signIn("credentials", { email, password, redirect: false });
+      router.refresh();
       router.push("/auth/onboarding");
     } finally {
       setLoading(false);
