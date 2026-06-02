@@ -23,6 +23,7 @@ interface AnalyticsData {
     wickets: Array<{ match: number; date: string; wickets: number }>;
     economy: Array<{ match: number; date: string; economy: number }>;
     allRound: Array<{ match: number; date: string; runs: number; wickets: number }>;
+    ratingOverTime: Array<{ date: string; rating: number }>;
   };
   dismissals: Array<{ name: string; value: number }>;
   heatmap: Array<{ date: string; runs: number; result: string }>;
@@ -276,6 +277,32 @@ export default function AnalyticsPage() {
           <span className="text-xs text-[#6B7280]">More</span>
         </div>
       </div>
+
+      {/* CricketIQ Rating Over Time */}
+      {charts.ratingOverTime && charts.ratingOverTime.length > 1 && (
+        <div className="rounded-xl border border-[#1F2937] bg-[#111827] p-5">
+          <p className="text-sm font-medium text-white mb-4">CricketIQ Rating Over Time</p>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={charts.ratingOverTime}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1F2937" />
+              <XAxis dataKey="date" tick={{ fill: "#6B7280", fontSize: 10 }} tickLine={false} />
+              <YAxis domain={[0, 100]} tick={{ fill: "#6B7280", fontSize: 10 }} tickLine={false} axisLine={false} />
+              <Tooltip
+                contentStyle={tooltipStyle.contentStyle}
+                formatter={(v) => [`${(v as number).toFixed(1)}`, "Rating"]}
+              />
+              <Line
+                type="monotone"
+                dataKey="rating"
+                stroke="#00D4AA"
+                strokeWidth={2.5}
+                dot={{ fill: "#00D4AA", r: 3 }}
+                activeDot={{ r: 5 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 }

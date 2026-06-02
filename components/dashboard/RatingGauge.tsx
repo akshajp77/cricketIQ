@@ -41,10 +41,10 @@ export function RatingGauge({ breakdown }: RatingGaugeProps) {
       {/* Breakdown */}
       <div className="w-full space-y-2 mt-4">
         {[
-          { label: "Batting", value: breakdown.batting, max: 40, color: "#00D4AA" },
-          { label: "Bowling", value: breakdown.bowling, max: 35, color: "#F59E0B" },
-          { label: "Fielding", value: breakdown.fielding, max: 10, color: "#8B5CF6" },
-          { label: "Form", value: breakdown.form, max: 15, color: "#EC4899" },
+          { label: "Batting",  value: breakdown.batting,  max: 40, color: "#00D4AA" },
+          { label: "Bowling",  value: breakdown.bowling,  max: 35, color: "#F59E0B" },
+          { label: "Fielding", value: breakdown.fielding, max: 10, color: "#3B82F6" },
+          { label: "Form",     value: breakdown.form,     max: 15, color: "#10B981" },
         ].map((item) => (
           <div key={item.label}>
             <div className="flex justify-between text-xs mb-1">

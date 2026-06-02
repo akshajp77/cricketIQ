@@ -13,6 +13,11 @@ export interface RatingBreakdown {
   total: number;
 }
 
+function clamp(value: number, min: number, max: number): number {
+  if (!Number.isFinite(value)) return min;
+  return Math.min(Math.max(value, min), max);
+}
+
 export function calculateCricketIQRating(matches: FullMatch[]): RatingBreakdown {
   if (matches.length === 0) {
     return { batting: 0, bowling: 0, fielding: 0, form: 0, total: 0 };
@@ -22,64 +27,52 @@ export function calculateCricketIQRating(matches: FullMatch[]): RatingBreakdown 
   const bowling = calcBowlingStats(matches);
   const fielding = calcFieldingStats(matches);
 
-  // Batting (40pts): avg/60*20 + SR/150*10 + consistency*10
-  const avgScore = Math.min((batting.battingAvg / 60) * 20, 20);
-  const srScore = Math.min((batting.strikeRate / 150) * 10, 10);
-  const consistencyScore = Math.min(
-    ((batting.fifties + batting.hundreds * 2) / Math.max(batting.innings, 1)) * 20,
-    10
-  );
-  const battingScore = avgScore + srScore + consistencyScore;
+  // ── BATTING (max 40) ───────────────────────────────────────────────────────
+  const avgScore       = clamp(batting.battingAvg / 50, 0, 1) * 20;
+  const srScore        = clamp(batting.strikeRate / 140, 0, 1) * 12;
+  const milestones     = clamp((batting.fifties + batting.hundreds * 2) / 10, 0, 1) * 8;
+  const battingScore   = clamp(avgScore + srScore + milestones, 0, 40);
 
-  // Bowling (35pts): wickets_per_match*5 + economy_score*15 + SR_score*15
-  const wicketsScore = Math.min(bowling.wicketsPerMatch * 5, 10);
-  const economyScore = Math.min(
-    bowling.economy > 0 ? Math.max(0, (10 - bowling.economy) / 10) * 15 : 0,
-    15
-  );
-  const bowlingSRScore = Math.min(
-    bowling.bowlingSR > 0 ? Math.max(0, (30 - bowling.bowlingSR) / 30) * 15 : 0,
-    15
-  );
-  const bowlingScore = wicketsScore + economyScore + bowlingSRScore;
+  // ── BOWLING (max 35) ───────────────────────────────────────────────────────
+  const wktScore   = clamp(bowling.wicketsPerMatch / 2, 0, 1) * 15;
+  // lower economy = better; range [0,10] → score [0,12]
+  const ecoScore   = clamp((10 - bowling.economy) / 6, 0, 1) * 12;
+  // lower bowling avg = better; range [0,40] → score [0,8]
+  const bowlAvg    = clamp((40 - bowling.bowlingAvg) / 30, 0, 1) * 8;
+  const bowlingScore = clamp(wktScore + ecoScore + bowlAvg, 0, 35);
 
-  // Fielding (10pts): (catches + runouts*1.5 + stumpings*2) / matches * 10
+  // ── FIELDING (max 10) ──────────────────────────────────────────────────────
   const fieldingIndex =
-    (fielding.totalCatches +
-      fielding.totalRunOuts * 1.5 +
-      fielding.totalStumpings * 2) /
+    (fielding.totalCatches + fielding.totalRunOuts * 1.5) /
     Math.max(matches.length, 1);
-  const fieldingScore = Math.min(fieldingIndex * 10, 10);
+  const fieldingScore = clamp(fieldingIndex * 10, 0, 10);
 
-  // Form (15pts): last5_avg / career_avg * 15
+  // ── FORM (max 15) ─────────────────────────────────────────────────────────
   const sorted = [...matches].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
   const last5 = sorted.slice(0, 5);
-  const last5Innings = last5.filter(
-    (m) =>
-      m.batting?.dismissalType !== "Did Not Bat" &&
-      m.batting?.dismissalType !== "Not Out"
+  const last5Batting = last5.filter(
+    (m) => m.batting?.dismissalType !== "Did Not Bat"
   );
   const last5Runs = last5.reduce((s, m) => s + (m.batting?.runs ?? 0), 0);
-  const last5Avg =
-    last5Innings.length > 0 ? last5Runs / last5Innings.length : batting.battingAvg;
-  const formScore = Math.min(
-    batting.battingAvg > 0 ? (last5Avg / batting.battingAvg) * 15 : 7.5,
-    15
-  );
+  const last5Avg  = last5Batting.length > 0 ? last5Runs / last5Batting.length : 0;
 
-  const total = Math.min(
-    Math.max(battingScore + bowlingScore + fieldingScore + formScore, 0),
-    100
-  );
+  let formScore: number;
+  if (batting.battingAvg > 0 && last5Avg > 0) {
+    formScore = clamp((last5Avg / batting.battingAvg) * 15, 0, 15);
+  } else {
+    formScore = 7.5; // default for brand-new players
+  }
+
+  const total = clamp(battingScore + bowlingScore + fieldingScore + formScore, 0, 100);
 
   return {
-    batting: Math.round(battingScore * 10) / 10,
-    bowling: Math.round(bowlingScore * 10) / 10,
+    batting:  Math.round(battingScore  * 10) / 10,
+    bowling:  Math.round(bowlingScore  * 10) / 10,
     fielding: Math.round(fieldingScore * 10) / 10,
-    form: Math.round(formScore * 10) / 10,
-    total: Math.round(total * 10) / 10,
+    form:     Math.round(formScore     * 10) / 10,
+    total:    Math.round(total         * 10) / 10,
   };
 }
 

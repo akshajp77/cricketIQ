@@ -79,6 +79,18 @@ export async function GET(req: NextRequest) {
     wicketTypes[d.name] = (wicketTypes[d.name] ?? 0) + d.value;
   });
 
+  // Rating history — always full history regardless of date filter
+  const ratingHistory = await prisma.ratingHistory.findMany({
+    where: { userId: session.user.id },
+    orderBy: { date: "asc" },
+    select: { date: true, rating: true },
+  });
+
+  const ratingOverTime = ratingHistory.map((r) => ({
+    date: new Date(r.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
+    rating: r.rating,
+  }));
+
   return NextResponse.json({
     stats: { batting, bowling, fielding },
     trend,
@@ -89,6 +101,7 @@ export async function GET(req: NextRequest) {
       wickets: allWickets,
       economy: allEco,
       allRound,
+      ratingOverTime,
     },
     dismissals,
     heatmap,
