@@ -8,7 +8,6 @@ import {
   BarChart, Bar,
   ComposedChart,
   PieChart, Pie, Cell,
-  RadialBarChart, RadialBar,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer, ReferenceLine,
 } from "recharts";
@@ -220,16 +219,24 @@ export default function AnalyticsPage() {
 
         {/* Boundary Percentage */}
         <ChartCard title="Boundary Percentage">
-          <div className="flex flex-col items-center justify-center h-[200px]">
-            <ResponsiveContainer width="100%" height={160}>
-              <RadialBarChart cx="50%" cy="50%" innerRadius="60%" outerRadius="90%" startAngle={90} endAngle={-270} data={[{ value: boundaryPct, fill: "#00D4AA" }]}>
-                <RadialBar dataKey="value" cornerRadius={8} />
-              </RadialBarChart>
-            </ResponsiveContainer>
-            <div className="-mt-16 text-center">
-              <p className="text-2xl font-bold text-[#00D4AA] stat-mono">{boundaryPct.toFixed(1)}%</p>
-              <p className="text-xs text-[#6B7280]">Boundary balls</p>
+          <div className="flex flex-col items-center justify-center h-[200px] gap-3">
+            <div className="relative w-32 h-32">
+              <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#1F2937" strokeWidth="12" />
+                <circle
+                  cx="60" cy="60" r="50" fill="none"
+                  stroke="#00D4AA" strokeWidth="12"
+                  strokeLinecap="round"
+                  strokeDasharray={`${2 * Math.PI * 50}`}
+                  strokeDashoffset={`${2 * Math.PI * 50 * (1 - boundaryPct / 100)}`}
+                  style={{ transition: "stroke-dashoffset 1s ease" }}
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <p className="text-xl font-bold text-[#00D4AA] stat-mono">{boundaryPct.toFixed(1)}%</p>
+              </div>
             </div>
+            <p className="text-xs text-[#6B7280]">of balls hit for boundaries</p>
           </div>
         </ChartCard>
 

@@ -153,7 +153,7 @@ export default function AICoachPage() {
             <Sparkles className="w-5 h-5 text-[#00D4AA]" />
             <h2 className="text-2xl font-bold text-white">AI Coach</h2>
           </div>
-          <p className="text-sm text-[#6B7280] mt-0.5">Powered by GPT-4o</p>
+          <p className="text-sm text-[#6B7280] mt-0.5">Powered by Gemini</p>
         </div>
 
         <Button
