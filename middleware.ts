@@ -12,8 +12,9 @@ export default function middleware(req: NextRequest) {
   // Always allow API routes (they do their own auth checks)
   if (isApi) return NextResponse.next();
 
-  // Public landing page
-  if (nextUrl.pathname === "/") return NextResponse.next();
+  // Public pages (landing + legal)
+  const publicPaths = ["/", "/privacy", "/terms"];
+  if (publicPaths.includes(nextUrl.pathname)) return NextResponse.next();
 
   // NextAuth v5 JWT cookie names (authjs.* not next-auth.*)
   const sessionToken =

@@ -359,9 +359,15 @@ function Landing() {
               — AI cricket analytics
             </span>
           </div>
-          <p className="text-white/30 text-sm">
-            © {new Date().getFullYear()} CricketIQ
-          </p>
+          <div className="flex items-center gap-5 text-sm text-white/40">
+            <Link href="/privacy" className="hover:text-white transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="hover:text-white transition-colors">
+              Terms of Service
+            </Link>
+            <span className="text-white/30">© {new Date().getFullYear()} CricketIQ</span>
+          </div>
         </div>
       </footer>
     </div>

@@ -95,9 +95,13 @@ export default function SettingsPage() {
       </div>
 
       {/* About */}
-      <div className="text-center text-xs text-[#6B7280]">
+      <div className="text-center text-xs text-[#6B7280] space-y-1">
         <p>CricketIQ v1.0.0 — AI Cricket Analytics Platform</p>
-        <p className="mt-1">Built with Next.js 14, Prisma, and OpenAI GPT-4o</p>
+        <p>Built with Next.js 14, Prisma, and Google Gemini</p>
+        <div className="flex items-center justify-center gap-4 pt-2">
+          <a href="/privacy" className="hover:text-[#00D4AA] transition-colors">Privacy Policy</a>
+          <a href="/terms" className="hover:text-[#00D4AA] transition-colors">Terms of Service</a>
+        </div>
       </div>
     </div>
   );
