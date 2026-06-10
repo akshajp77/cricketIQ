@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, peekRateLimit } from "@/lib/rateLimit";
 import {
   calcBattingStats,
   calcBowlingStats,
@@ -77,6 +78,19 @@ export async function POST() {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Rate limit: 1 AI analysis per user per week
+  const rateCheck = await checkRateLimit(session.user.id, 1);
+  if (!rateCheck.allowed) {
+    return NextResponse.json(
+      {
+        error: "Weekly limit reached",
+        message:
+          "You've used your AI Coach analysis for this week. Your limit resets every Monday at midnight UTC.",
+      },
+      { status: 429 }
+    );
   }
 
   // Check API key before making any calls
@@ -180,7 +194,11 @@ export async function POST() {
     },
   });
 
-  return NextResponse.json(analysis);
+  return NextResponse.json({
+    ...analysis,
+    remaining: rateCheck.remaining,
+    limit: rateCheck.limit,
+  });
 }
 
 export async function GET() {
@@ -189,10 +207,13 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const analyses = await prisma.aIAnalysis.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-  });
+  const [analyses, usage] = await Promise.all([
+    prisma.aIAnalysis.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+    }),
+    peekRateLimit(session.user.id, 1),
+  ]);
 
-  return NextResponse.json(analyses);
+  return NextResponse.json({ analyses, usage });
 }

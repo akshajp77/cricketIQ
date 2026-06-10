@@ -11,6 +11,7 @@ import {
   TrendingUp,
   ClipboardList,
   Swords,
+  CalendarClock,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,11 @@ interface AIAnalysis {
   improvements: string[];
   trainingPlan: string;
   matchStrategy: string;
+}
+
+interface Usage {
+  remaining: number;
+  limit: number;
 }
 
 // ─── Insight card ────────────────────────────────────────────────────────────
@@ -129,6 +135,28 @@ function AnalyzingState() {
   );
 }
 
+// ─── Weekly limit banner ─────────────────────────────────────────────────────
+
+function WeeklyLimitBanner() {
+  return (
+    <div className="flex items-start gap-4 rounded-xl border border-[#1B212C] bg-[#0C1015] p-5">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#1B212C] bg-white/[0.03]">
+        <CalendarClock className="h-4 w-4 text-[#6B7484]" />
+      </div>
+      <div>
+        <p className="text-sm font-medium text-[#D7DCE4]">
+          Weekly analysis used
+        </p>
+        <p className="mt-1 text-sm leading-relaxed text-[#6B7484]">
+          You&apos;ve got this week&apos;s coaching session in. Come back next Monday to
+          analyze your game again — consistency between sessions is where real
+          improvement happens.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ─── History item ────────────────────────────────────────────────────────────
 
 function HistoryItem({ analysis }: { analysis: AIAnalysis }) {
@@ -172,6 +200,7 @@ export default function AICoachPage() {
   const [loading, setLoading] = useState(false);
   const [current, setCurrent] = useState<AIAnalysis | null>(null);
   const [history, setHistory] = useState<AIAnalysis[]>([]);
+  const [usage, setUsage] = useState<Usage | null>(null);
 
   useEffect(() => {
     fetch("/api/ai-coach")
@@ -179,11 +208,12 @@ export default function AICoachPage() {
         if (!r.ok) throw new Error();
         return r.json();
       })
-      .then((data: AIAnalysis[]) => {
-        if (data.length > 0) {
-          setCurrent(data[0]);
-          setHistory(data);
+      .then((data: { analyses: AIAnalysis[]; usage: Usage }) => {
+        if (data.analyses.length > 0) {
+          setCurrent(data.analyses[0]);
+          setHistory(data.analyses);
         }
+        setUsage(data.usage);
       })
       .catch(() => toast.error("Failed to load analysis history"));
   }, []);
@@ -195,10 +225,14 @@ export default function AICoachPage() {
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.error ?? "Analysis failed");
+        // Refresh usage state on 429 so UI reflects the limit immediately
+        if (res.status === 429) setUsage({ remaining: 0, limit: 1 });
         return;
       }
-      setCurrent(data);
-      setHistory((prev) => [data, ...prev.filter((x) => x.id !== data.id)]);
+      const { remaining, limit, ...analysis } = data as AIAnalysis & Usage;
+      setCurrent(analysis);
+      setHistory((prev) => [analysis, ...prev.filter((x) => x.id !== analysis.id)]);
+      setUsage({ remaining, limit });
       toast.success("Analysis complete!");
     } catch {
       toast.error("Network error — please try again");
@@ -207,6 +241,7 @@ export default function AICoachPage() {
     }
   }
 
+  const limitReached = usage !== null && usage.remaining === 0;
   const pastAnalyses = current ? history.filter((h) => h.id !== current.id) : history;
 
   return (
@@ -229,29 +264,36 @@ export default function AICoachPage() {
               </p>
             </div>
           </div>
-          <Button
-            onClick={handleAnalyze}
-            disabled={loading}
-            size="lg"
-            className="shrink-0 bg-emerald-500 px-6 font-semibold text-black shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-400 hover:shadow-emerald-400/30"
-          >
-            {loading ? (
-              <>
-                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-black/30 border-t-black" />
-                Analyzing…
-              </>
-            ) : (
-              <>
-                <Sparkles className="mr-2 h-4 w-4" />
-                Analyze My Performance
-              </>
-            )}
-          </Button>
+
+          {/* CTA — hidden when limit reached */}
+          {!limitReached && (
+            <Button
+              onClick={handleAnalyze}
+              disabled={loading}
+              size="lg"
+              className="shrink-0 bg-emerald-500 px-6 font-semibold text-black shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-400 hover:shadow-emerald-400/30"
+            >
+              {loading ? (
+                <>
+                  <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-black/30 border-t-black" />
+                  Analyzing…
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Analyze My Performance
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Loading */}
       {loading && <AnalyzingState />}
+
+      {/* Weekly limit banner — shown when limit reached */}
+      {limitReached && !loading && <WeeklyLimitBanner />}
 
       {/* Current result */}
       {current && !loading && (
@@ -267,6 +309,13 @@ export default function AICoachPage() {
             </p>
           </div>
           <AnalysisGrid analysis={current} />
+          {/* Usage indicator below the report */}
+          {usage && (
+            <p className="pt-1 text-center text-xs text-[#5A6372]">
+              {usage.limit - usage.remaining} of {usage.limit} weekly{" "}
+              {usage.limit === 1 ? "analysis" : "analyses"} used
+            </p>
+          )}
         </div>
       )}
 

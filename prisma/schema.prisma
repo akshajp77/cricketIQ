@@ -57,6 +57,7 @@ model User {
   matches       Match[]
   aiAnalyses    AIAnalysis[]
   ratingHistory RatingHistory[]
+  apiUsage      ApiUsage[]
 }
 
 model PlayerProfile {
@@ -149,6 +150,20 @@ model RatingHistory {
   breakdown Json
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ApiUsage {
+  id         String   @id @default(cuid())
+  userId     String
+  weekNumber Int
+  year       Int
+  count      Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekNumber, year])
 }
 
 model BallEvent {
