@@ -2,8 +2,20 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2,
+  AlertTriangle,
+  TrendingUp,
+  ClipboardList,
+  Swords,
+  type LucideIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface AIAnalysis {
   id: string;
@@ -15,36 +27,39 @@ interface AIAnalysis {
   matchStrategy: string;
 }
 
-// ─── Card ──────────────────────────────────────────────────────────────────
+// ─── Insight card ────────────────────────────────────────────────────────────
 
 interface CardProps {
   title: string;
   accent: string;
+  icon: LucideIcon;
   items?: string[];
   body?: string;
 }
 
-function AnalysisCard({ title, accent, items, body }: CardProps) {
+function AnalysisCard({ title, accent, icon: Icon, items, body }: CardProps) {
   return (
-    <div
-      className="rounded-xl p-5 flex flex-col gap-3"
-      style={{
-        background: `${accent}10`,
-        border: `1px solid ${accent}30`,
-      }}
-    >
-      <p
-        className="text-xs font-semibold uppercase tracking-widest"
-        style={{ color: accent }}
-      >
-        {title}
-      </p>
+    <div className="flex flex-col gap-3 rounded-xl border border-[#1B212C] bg-[#0C1015] p-5 transition-colors hover:border-[#2A3240]">
+      <div className="flex items-center gap-2.5">
+        <div
+          className="flex h-7 w-7 items-center justify-center rounded-lg"
+          style={{ background: `${accent}14`, border: `1px solid ${accent}26` }}
+        >
+          <Icon className="h-3.5 w-3.5" style={{ color: accent }} />
+        </div>
+        <p
+          className="text-[11px] font-semibold uppercase tracking-[0.14em]"
+          style={{ color: accent }}
+        >
+          {title}
+        </p>
+      </div>
       {items && (
-        <ul className="space-y-2">
+        <ul className="space-y-2.5">
           {items.map((item, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm text-[#D1D5DB]">
+            <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed text-[#D7DCE4]">
               <span
-                className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"
+                className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full"
                 style={{ background: accent }}
               />
               {item}
@@ -52,12 +67,69 @@ function AnalysisCard({ title, accent, items, body }: CardProps) {
           ))}
         </ul>
       )}
-      {body && <p className="text-sm text-[#D1D5DB] leading-relaxed">{body}</p>}
+      {body && <p className="text-sm leading-relaxed text-[#D7DCE4]">{body}</p>}
     </div>
   );
 }
 
-// ─── History item ──────────────────────────────────────────────────────────
+function AnalysisGrid({ analysis }: { analysis: AIAnalysis }) {
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <AnalysisCard title="Strengths" accent="#10B981" icon={CheckCircle2} items={analysis.strengths} />
+        <AnalysisCard title="Weaknesses" accent="#EF4444" icon={AlertTriangle} items={analysis.weaknesses} />
+        <AnalysisCard title="How to Improve" accent="#F59E0B" icon={TrendingUp} items={analysis.improvements} />
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <AnalysisCard title="Training Plan" accent="#A78BFA" icon={ClipboardList} body={analysis.trainingPlan} />
+        <AnalysisCard title="Match Strategy" accent="#38BDF8" icon={Swords} body={analysis.matchStrategy} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Loading state ───────────────────────────────────────────────────────────
+
+function AnalyzingState() {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.05] px-5 py-4">
+        <span className="relative flex h-2.5 w-2.5">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
+        </span>
+        <div>
+          <p className="text-sm font-medium text-white">Analyzing your performance…</p>
+          <p className="text-xs text-[#8A93A3]">
+            The AI coach is reading your full match history. This usually takes a few seconds.
+          </p>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="space-y-3 rounded-xl border border-[#1B212C] bg-[#0C1015] p-5">
+            <Skeleton className="h-5 w-28" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-4 w-4/6" />
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div key={i} className="space-y-3 rounded-xl border border-[#1B212C] bg-[#0C1015] p-5">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── History item ────────────────────────────────────────────────────────────
 
 function HistoryItem({ analysis }: { analysis: AIAnalysis }) {
   const [open, setOpen] = useState(false);
@@ -67,40 +139,34 @@ function HistoryItem({ analysis }: { analysis: AIAnalysis }) {
   });
 
   return (
-    <div className="rounded-xl border border-[#1F2937] bg-[#111827] overflow-hidden">
+    <div className="overflow-hidden rounded-xl border border-[#1B212C] bg-[#0C1015]">
       <button
-        className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#1F2937]/50 transition-colors text-left"
+        className="flex w-full items-center justify-between px-5 py-4 text-left transition-colors hover:bg-white/[0.02]"
         onClick={() => setOpen(!open)}
       >
-        <div>
+        <div className="min-w-0">
           <p className="text-sm font-medium text-white">{date}</p>
-          <p className="text-xs text-[#6B7280] mt-0.5 truncate max-w-xs">
+          <p className="mt-0.5 max-w-md truncate text-xs text-[#6B7484]">
             {analysis.strengths[0] ?? "—"}
           </p>
         </div>
         {open ? (
-          <ChevronUp className="w-4 h-4 text-[#6B7280] shrink-0" />
+          <ChevronUp className="h-4 w-4 shrink-0 text-[#5A6372]" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-[#6B7280] shrink-0" />
+          <ChevronDown className="h-4 w-4 shrink-0 text-[#5A6372]" />
         )}
       </button>
 
       {open && (
-        <div className="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-[#1F2937]">
-          <div className="pt-4 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <AnalysisCard title="Strengths" accent="#10B981" items={analysis.strengths} />
-            <AnalysisCard title="Weaknesses" accent="#EF4444" items={analysis.weaknesses} />
-            <AnalysisCard title="How to Improve" accent="#F59E0B" items={analysis.improvements} />
-            <AnalysisCard title="Training Plan" accent="#00D4AA" body={analysis.trainingPlan} />
-            <AnalysisCard title="Match Strategy" accent="#00D4AA" body={analysis.matchStrategy} />
-          </div>
+        <div className="border-t border-[#161B24] bg-[#07090D]/40 p-5">
+          <AnalysisGrid analysis={analysis} />
         </div>
       )}
     </div>
   );
 }
 
-// ─── Main page ─────────────────────────────────────────────────────────────
+// ─── Main page ───────────────────────────────────────────────────────────────
 
 export default function AICoachPage() {
   const [loading, setLoading] = useState(false);
@@ -144,75 +210,79 @@ export default function AICoachPage() {
   const pastAnalyses = current ? history.filter((h) => h.id !== current.id) : history;
 
   return (
-    <div className="p-6 max-w-5xl space-y-8">
-
-      {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-[#00D4AA]" />
-            <h2 className="text-2xl font-bold text-white">AI Coach</h2>
+    <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
+      {/* Hero header */}
+      <div className="relative overflow-hidden rounded-2xl border border-emerald-500/20 bg-[#0C1015] p-6 sm:p-8">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,0.10),transparent_55%)]" />
+        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-green-600 shadow-lg shadow-emerald-500/25">
+              <Sparkles className="h-5 w-5 text-black" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl">
+                AI Coach
+              </h1>
+              <p className="mt-1 max-w-md text-sm leading-relaxed text-[#8A93A3]">
+                Personalised strengths, weaknesses, and a training plan — generated
+                from your complete match history.
+              </p>
+            </div>
           </div>
-          <p className="text-sm text-[#6B7280] mt-0.5">Powered by Gemini</p>
+          <Button
+            onClick={handleAnalyze}
+            disabled={loading}
+            size="lg"
+            className="shrink-0 bg-emerald-500 px-6 font-semibold text-black shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-400 hover:shadow-emerald-400/30"
+          >
+            {loading ? (
+              <>
+                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-black/30 border-t-black" />
+                Analyzing…
+              </>
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Analyze My Performance
+              </>
+            )}
+          </Button>
         </div>
-
-        <Button
-          onClick={handleAnalyze}
-          disabled={loading}
-          className="bg-[#00D4AA] text-[#0A0F1E] hover:bg-[#00D4AA]/90 font-semibold px-6"
-          size="lg"
-        >
-          {loading ? (
-            <>
-              <div className="w-4 h-4 border-2 border-[#0A0F1E]/40 border-t-[#0A0F1E] rounded-full animate-spin mr-2" />
-              Analyzing your performance...
-            </>
-          ) : (
-            <>
-              🏏 Analyze My Performance
-            </>
-          )}
-        </Button>
       </div>
 
-      {/* ── Current result ── */}
+      {/* Loading */}
+      {loading && <AnalyzingState />}
+
+      {/* Current result */}
       {current && !loading && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <AnalysisCard title="Strengths" accent="#10B981" items={current.strengths} />
-            <AnalysisCard title="Weaknesses" accent="#EF4444" items={current.weaknesses} />
-            <AnalysisCard title="How to Improve" accent="#F59E0B" items={current.improvements} />
-            <AnalysisCard title="Training Plan" accent="#00D4AA" body={current.trainingPlan} />
-            <AnalysisCard title="Match Strategy" accent="#00D4AA" body={current.matchStrategy} />
-          </div>
-
-          <p className="text-xs text-[#6B7280]">
-            Last analyzed:{" "}
-            {new Date(current.createdAt).toLocaleString("en-GB", {
-              day: "numeric", month: "short", year: "numeric",
-              hour: "2-digit", minute: "2-digit",
-            })}
-          </p>
-        </div>
-      )}
-
-      {/* ── Empty state ── */}
-      {!current && !loading && (
-        <div className="rounded-xl border border-[#1F2937] bg-[#111827] p-12 text-center">
-          <Sparkles className="w-10 h-10 text-[#00D4AA]/40 mx-auto mb-3" />
-          <p className="text-white font-medium">No analysis yet</p>
-          <p className="text-sm text-[#6B7280] mt-1">
-            Click &ldquo;Analyze My Performance&rdquo; to get your first AI coaching report.
-          </p>
-        </div>
-      )}
-
-      {/* ── History ── */}
-      {pastAnalyses.length > 0 && (
         <div className="space-y-3">
-          <p className="text-sm font-medium text-[#6B7280] uppercase tracking-wider">
-            Previous Analyses
-          </p>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-white">Latest Report</h2>
+            <p className="text-xs text-[#5A6372]">
+              Generated{" "}
+              {new Date(current.createdAt).toLocaleString("en-GB", {
+                day: "numeric", month: "short", year: "numeric",
+                hour: "2-digit", minute: "2-digit",
+              })}
+            </p>
+          </div>
+          <AnalysisGrid analysis={current} />
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!current && !loading && (
+        <EmptyState
+          icon={Sparkles}
+          title="No analysis yet"
+          description="Run your first AI analysis to get a personalised coaching report based on your match history."
+        />
+      )}
+
+      {/* History */}
+      {pastAnalyses.length > 0 && !loading && (
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-white">Previous Reports</h2>
           <div className="space-y-2">
             {pastAnalyses.map((a) => (
               <HistoryItem key={a.id} analysis={a} />

@@ -17,21 +17,26 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0D1526]/95 backdrop-blur-md border-t border-[#1F2937] safe-area-pb">
-      <div className="flex items-center justify-around h-16">
+    <nav className="safe-area-pb fixed inset-x-0 bottom-0 z-50 border-t border-[#161B24] bg-[#0A0D12]/95 backdrop-blur-xl md:hidden">
+      <div className="flex h-16 items-center justify-around">
         {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+          const isActive =
+            pathname === item.href ||
+            (item.href !== "/dashboard" && pathname.startsWith(item.href));
           const Icon = item.icon;
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors",
-                isActive ? "text-[#00D4AA]" : "text-[#6B7280]"
+                "relative flex flex-col items-center gap-1 px-3 py-1.5 transition-colors",
+                isActive ? "text-emerald-400" : "text-[#6B7484]"
               )}
             >
-              <Icon className="w-5 h-5" />
+              {isActive && (
+                <span className="absolute -top-[13px] h-[2px] w-8 rounded-full bg-emerald-400" />
+              )}
+              <Icon className="h-5 w-5" />
               <span className="text-[10px] font-medium">{item.label}</span>
             </Link>
           );

@@ -36,7 +36,7 @@ export function TableOfContents() {
           href={`#${s.id}`}
           className={`block text-sm py-1.5 px-3 rounded-md transition-colors border-l-2 ${
             active === s.id
-              ? "border-[#00D4AA] text-[#00D4AA] bg-[#00D4AA]/5"
+              ? "border-[#10B981] text-[#10B981] bg-[#10B981]/5"
               : "border-transparent text-[#9CA3AF] hover:text-white hover:bg-white/5"
           }`}
         >

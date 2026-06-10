@@ -197,7 +197,7 @@ export default function PrivacyPage() {
           personal data, please contact us at:
         </p>
         <p>
-          <a href="mailto:privacy@cricketiq.app" className="text-[#00D4AA]">
+          <a href="mailto:privacy@cricketiq.app" className="text-[#10B981]">
             privacy@cricketiq.app
           </a>
         </p>

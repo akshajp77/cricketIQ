@@ -28,15 +28,15 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark scroll-smooth">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0A0F1E] text-[#F9FAFB] min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#07090D] text-[#F9FAFB] min-h-screen`}
       >
         {children}
         <Toaster
           theme="dark"
           toastOptions={{
             style: {
-              background: "#111827",
-              border: "1px solid #1F2937",
+              background: "#0C1015",
+              border: "1px solid #1B212C",
               color: "#F9FAFB",
             },
           }}

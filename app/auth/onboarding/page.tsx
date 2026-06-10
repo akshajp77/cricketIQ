@@ -68,14 +68,14 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0F1E] flex items-center justify-center relative overflow-hidden">
-      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 30% 70%, rgba(0,212,170,0.07) 0%, transparent 60%)" }} />
+    <div className="min-h-screen bg-[#07090D] flex items-center justify-center relative overflow-hidden">
+      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 30% 70%, rgba(16,185,129,0.07) 0%, transparent 60%)" }} />
 
       <div className="relative z-10 w-full max-w-2xl px-6">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-[#00D4AA] to-[#0093A8] mb-4">
-            <Trophy className="w-6 h-6 text-[#0A0F1E]" />
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-[#10B981] to-[#059669] mb-4">
+            <Trophy className="w-6 h-6 text-[#07090D]" />
           </div>
           <h1 className="text-2xl font-bold text-white">Set up your profile</h1>
           <p className="text-[#6B7280] mt-1">Complete your cricket profile to get started</p>
@@ -85,14 +85,14 @@ export default function OnboardingPage() {
         <div className="flex items-center justify-center mb-8 gap-0">
           {STEPS.map((s, i) => (
             <div key={s.id} className="flex items-center">
-              <div className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-semibold transition-all ${step > s.id ? "bg-[#00D4AA] text-[#0A0F1E]" : step === s.id ? "bg-[#00D4AA]/20 border-2 border-[#00D4AA] text-[#00D4AA]" : "bg-[#1F2937] text-[#6B7280]"}`}>
+              <div className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-semibold transition-all ${step > s.id ? "bg-[#10B981] text-[#07090D]" : step === s.id ? "bg-[#10B981]/20 border-2 border-[#10B981] text-[#10B981]" : "bg-[#1B212C] text-[#6B7280]"}`}>
                 {step > s.id ? <CheckCircle className="w-5 h-5" /> : s.id}
               </div>
               <div className="hidden sm:block ml-2 mr-6">
                 <p className={`text-xs font-medium ${step >= s.id ? "text-white" : "text-[#6B7280]"}`}>{s.title}</p>
               </div>
               {i < STEPS.length - 1 && (
-                <div className={`w-12 h-[2px] mr-2 ${step > s.id ? "bg-[#00D4AA]" : "bg-[#1F2937]"}`} />
+                <div className={`w-12 h-[2px] mr-2 ${step > s.id ? "bg-[#10B981]" : "bg-[#1B212C]"}`} />
               )}
             </div>
           ))}
@@ -157,8 +157,8 @@ export default function OnboardingPage() {
                 <Label>Team Name</Label>
                 <Input placeholder="Mumbai Hawks, Local XI, etc." value={form.teamName} onChange={(e) => update("teamName", e.target.value)} />
               </div>
-              <div className="p-4 rounded-lg bg-[#00D4AA]/10 border border-[#00D4AA]/20">
-                <p className="text-sm text-[#00D4AA] font-medium mb-1">You&apos;re almost there!</p>
+              <div className="p-4 rounded-lg bg-[#10B981]/10 border border-[#10B981]/20">
+                <p className="text-sm text-[#10B981] font-medium mb-1">You&apos;re almost there!</p>
                 <p className="text-xs text-[#6B7280]">CricketIQ will use this info to personalize your analytics and AI coaching recommendations.</p>
               </div>
             </div>
@@ -176,7 +176,7 @@ export default function OnboardingPage() {
             {step < 3 ? (
               <Button
                 onClick={() => setStep(step + 1)}
-                className="bg-[#00D4AA] text-[#0A0F1E] hover:bg-[#00D4AA]/90 font-semibold"
+                className="bg-[#10B981] text-[#07090D] hover:bg-[#10B981]/90 font-semibold"
               >
                 Continue
               </Button>
@@ -184,7 +184,7 @@ export default function OnboardingPage() {
               <Button
                 onClick={handleFinish}
                 disabled={loading}
-                className="bg-[#00D4AA] text-[#0A0F1E] hover:bg-[#00D4AA]/90 font-semibold"
+                className="bg-[#10B981] text-[#07090D] hover:bg-[#10B981]/90 font-semibold"
               >
                 {loading ? "Saving..." : "Complete Setup"}
               </Button>

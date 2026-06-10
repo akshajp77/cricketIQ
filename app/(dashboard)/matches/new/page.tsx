@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +27,7 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
+  Check,
 } from "lucide-react";
 
 const matchSchema = z.object({
@@ -59,11 +61,11 @@ const matchSchema = z.object({
 type MatchForm = z.infer<typeof matchSchema>;
 
 const STEPS = [
-  { id: 1, title: "Match Info", icon: FileText },
-  { id: 2, title: "Batting", icon: Activity },
-  { id: 3, title: "Bowling", icon: Target },
-  { id: 4, title: "Fielding", icon: Shield },
-  { id: 5, title: "Review", icon: CheckCircle },
+  { id: 1, title: "Match Info", desc: "Who, where, and the result", icon: FileText },
+  { id: 2, title: "Batting", desc: "Your innings with the bat", icon: Activity },
+  { id: 3, title: "Bowling", desc: "Your spell with the ball", icon: Target },
+  { id: 4, title: "Fielding", desc: "Catches and dismissals", icon: Shield },
+  { id: 5, title: "Review", desc: "Confirm and save", icon: CheckCircle },
 ];
 
 const STEP_FIELDS: Record<number, (keyof MatchForm)[]> = {
@@ -72,6 +74,44 @@ const STEP_FIELDS: Record<number, (keyof MatchForm)[]> = {
   3: ["overs", "runsConceded", "wickets", "maidens", "wides", "noBalls"],
   4: ["catches", "runOuts", "stumpings"],
 };
+
+function Field({
+  label,
+  required,
+  error,
+  className,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  error?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={cn("space-y-1.5", className)}>
+      <Label className="text-[13px] text-[#B6BDC9]">
+        {label}
+        {required && <span className="ml-0.5 text-emerald-400">*</span>}
+      </Label>
+      {children}
+      {error && <p className="text-xs text-red-400">{error}</p>}
+    </div>
+  );
+}
+
+function LiveStat({ label, value, accent }: { label: string; value: string; accent: string }) {
+  return (
+    <div className="flex items-center justify-between rounded-lg border border-[#1B212C] bg-[#07090D] px-4 py-3">
+      <span className="text-xs font-medium uppercase tracking-wider text-[#6B7484]">
+        {label}
+      </span>
+      <span className="stat-mono text-sm font-bold tabular-nums" style={{ color: accent }}>
+        {value}
+      </span>
+    </div>
+  );
+}
 
 export default function NewMatchPage() {
   const router = useRouter();
@@ -179,51 +219,89 @@ export default function NewMatchPage() {
   }
 
   const values = getValues();
+  const currentStep = STEPS[step - 1];
+  const progress = ((step - 1) / (STEPS.length - 1)) * 100;
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      {/* Step indicators */}
-      <div className="flex items-center justify-between mb-8 overflow-x-auto">
-        {STEPS.map((s, i) => {
-          const Icon = s.icon;
-          const isActive = step === s.id;
-          const isDone = step > s.id;
-          return (
-            <div key={s.id} className="flex items-center flex-shrink-0">
-              <div className={`flex items-center gap-2 ${isActive ? "text-[#00D4AA]" : isDone ? "text-emerald-400" : "text-[#6B7280]"}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border ${isActive ? "border-[#00D4AA] bg-[#00D4AA]/15" : isDone ? "border-emerald-400 bg-emerald-400/15" : "border-[#1F2937] bg-[#111827]"}`}>
-                  {isDone ? <CheckCircle className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
+    <div className="mx-auto max-w-2xl p-4 sm:p-6">
+      {/* Step indicator */}
+      <div className="mb-8">
+        <div className="mb-4 flex items-center justify-between">
+          {STEPS.map((s, i) => {
+            const Icon = s.icon;
+            const isActive = step === s.id;
+            const isDone = step > s.id;
+            return (
+              <div key={s.id} className="flex flex-1 items-center last:flex-none">
+                <div className="flex flex-col items-center gap-1.5">
+                  <div
+                    className={cn(
+                      "flex h-9 w-9 items-center justify-center rounded-full border text-sm transition-all duration-300",
+                      isActive
+                        ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-400 shadow-[0_0_16px_rgba(16,185,129,0.25)]"
+                        : isDone
+                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                        : "border-[#1B212C] bg-[#0C1015] text-[#5A6372]"
+                    )}
+                  >
+                    {isDone ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+                  </div>
+                  <span
+                    className={cn(
+                      "hidden text-[11px] font-medium sm:block",
+                      isActive ? "text-white" : isDone ? "text-emerald-400/80" : "text-[#5A6372]"
+                    )}
+                  >
+                    {s.title}
+                  </span>
                 </div>
-                <span className="text-xs font-medium hidden sm:block">{s.title}</span>
+                {i < STEPS.length - 1 && (
+                  <div className="mx-2 mb-5 h-px flex-1 self-end bg-[#1B212C] sm:mb-0 sm:self-center">
+                    <div
+                      className="h-full bg-emerald-500/60 transition-all duration-500"
+                      style={{ width: step > s.id ? "100%" : "0%" }}
+                    />
+                  </div>
+                )}
               </div>
-              {i < STEPS.length - 1 && (
-                <div className={`w-8 h-px mx-2 ${step > s.id ? "bg-emerald-400" : "bg-[#1F2937]"}`} />
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+        <div className="h-1 overflow-hidden rounded-full bg-[#1B212C]">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
       </div>
 
       <form onSubmit={(e) => e.preventDefault()}>
-        <div className="glass rounded-2xl p-6 space-y-4">
+        <div className="overflow-hidden rounded-2xl border border-[#1B212C] bg-[#0C1015]">
+          {/* Section header */}
+          <div className="flex items-center gap-3 border-b border-[#161B24] px-6 py-4">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-500/20 bg-emerald-500/10">
+              <currentStep.icon className="h-4 w-4 text-emerald-400" />
+            </div>
+            <div>
+              <h2 className="text-[15px] font-semibold text-white">{currentStep.title}</h2>
+              <p className="text-xs text-[#6B7484]">{currentStep.desc}</p>
+            </div>
+            <span className="ml-auto font-mono text-xs text-[#5A6372]">
+              {step}/{STEPS.length}
+            </span>
+          </div>
 
-          {/* Step 1: Match Info */}
-          {step === 1 && (
-            <>
-              <h2 className="text-lg font-semibold text-white">Match Information</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2 space-y-1.5">
-                  <Label>Opponent *</Label>
-                  <Input placeholder="Mumbai Indians" {...register("opponent")} />
-                  {errors.opponent && <p className="text-xs text-red-400">{errors.opponent.message}</p>}
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Date *</Label>
+          <div className="space-y-4 p-6">
+            {/* Step 1: Match Info */}
+            {step === 1 && (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Opponent" required error={errors.opponent?.message} className="sm:col-span-2">
+                  <Input placeholder="e.g. Dallas Lions" {...register("opponent")} />
+                </Field>
+                <Field label="Date" required error={errors.date?.message}>
                   <Input type="date" {...register("date")} max={new Date().toISOString().split("T")[0]} />
-                  {errors.date && <p className="text-xs text-red-400">{errors.date.message}</p>}
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Format *</Label>
+                </Field>
+                <Field label="Format" required error={errors.format?.message}>
                   <Select
                     value={watch("format")}
                     onValueChange={(v) => setValue("format", v, { shouldValidate: true })}
@@ -236,10 +314,8 @@ export default function NewMatchPage() {
                       <SelectItem value="Custom">Custom</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.format && <p className="text-xs text-red-400">{errors.format.message}</p>}
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Result *</Label>
+                </Field>
+                <Field label="Result" required error={errors.result?.message}>
                   <Select
                     value={watch("result")}
                     onValueChange={(v) => setValue("result", v, { shouldValidate: true })}
@@ -252,167 +328,136 @@ export default function NewMatchPage() {
                       <SelectItem value="No Result">No Result</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.result && <p className="text-xs text-red-400">{errors.result.message}</p>}
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Venue</Label>
+                </Field>
+                <Field label="Venue">
                   <Input placeholder="Stadium name" {...register("venue")} />
-                </div>
-                <div className="col-span-2 space-y-1.5">
-                  <Label>Notes (optional)</Label>
+                </Field>
+                <Field label="Notes (optional)" className="sm:col-span-2">
                   <Textarea placeholder="Any notes about the match..." rows={2} {...register("notes")} />
-                </div>
+                </Field>
               </div>
-            </>
-          )}
+            )}
 
-          {/* Step 2: Batting */}
-          {step === 2 && (
-            <>
-              <h2 className="text-lg font-semibold text-white">Batting Performance</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label>Runs</Label>
-                  <Input type="number" min={0} {...register("runs")} />
+            {/* Step 2: Batting */}
+            {step === 2 && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Runs">
+                    <Input type="number" min={0} {...register("runs")} />
+                  </Field>
+                  <Field label="Balls Faced">
+                    <Input type="number" min={0} {...register("balls")} />
+                  </Field>
+                  <Field label="Fours (4s)">
+                    <Input type="number" min={0} {...register("fours")} />
+                  </Field>
+                  <Field label="Sixes (6s)">
+                    <Input type="number" min={0} {...register("sixes")} />
+                  </Field>
+                  <Field label="Dismissal">
+                    <Select
+                      value={watch("dismissalType")}
+                      onValueChange={(v) => setValue("dismissalType", v)}
+                    >
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {["Bowled", "LBW", "Caught", "Run Out", "Stumped", "Not Out", "Did Not Bat", "Hit Wicket", "Handled Ball"].map((d) => (
+                          <SelectItem key={d} value={d}>{d}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field label="Batting Position">
+                    <Input type="number" min={1} max={11} placeholder="1–11" {...register("position")} />
+                  </Field>
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Balls Faced</Label>
-                  <Input type="number" min={0} {...register("balls")} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Fours (4s)</Label>
-                  <Input type="number" min={0} {...register("fours")} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Sixes (6s)</Label>
-                  <Input type="number" min={0} {...register("sixes")} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Dismissal</Label>
-                  <Select
-                    value={watch("dismissalType")}
-                    onValueChange={(v) => setValue("dismissalType", v)}
-                  >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {["Bowled", "LBW", "Caught", "Run Out", "Stumped", "Not Out", "Did Not Bat", "Hit Wicket", "Handled Ball"].map((d) => (
-                        <SelectItem key={d} value={d}>{d}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Batting Position</Label>
-                  <Input type="number" min={1} max={11} placeholder="1-11" {...register("position")} />
-                </div>
-              </div>
-              {watch("balls") > 0 && (
-                <div className="p-3 rounded-lg bg-[#0A0F1E] border border-[#1F2937] text-sm">
-                  <span className="text-[#6B7280]">Strike Rate: </span>
-                  <span className="text-[#00D4AA] font-mono font-semibold">
-                    {((watch("runs") / watch("balls")) * 100).toFixed(1)}
-                  </span>
-                </div>
-              )}
-            </>
-          )}
+                {watch("balls") > 0 && (
+                  <LiveStat
+                    label="Strike Rate"
+                    value={((watch("runs") / watch("balls")) * 100).toFixed(1)}
+                    accent="#10B981"
+                  />
+                )}
+              </>
+            )}
 
-          {/* Step 3: Bowling */}
-          {step === 3 && (
-            <>
-              <h2 className="text-lg font-semibold text-white">Bowling Performance</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label>Overs Bowled</Label>
-                  <Input type="number" min={0} step={0.1} {...register("overs")} />
+            {/* Step 3: Bowling */}
+            {step === 3 && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Overs Bowled">
+                    <Input type="number" min={0} step={0.1} {...register("overs")} />
+                  </Field>
+                  <Field label="Runs Conceded">
+                    <Input type="number" min={0} {...register("runsConceded")} />
+                  </Field>
+                  <Field label="Wickets">
+                    <Input type="number" min={0} max={10} {...register("wickets")} />
+                  </Field>
+                  <Field label="Maidens">
+                    <Input type="number" min={0} {...register("maidens")} />
+                  </Field>
+                  <Field label="Wides">
+                    <Input type="number" min={0} {...register("wides")} />
+                  </Field>
+                  <Field label="No Balls">
+                    <Input type="number" min={0} {...register("noBalls")} />
+                  </Field>
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Runs Conceded</Label>
-                  <Input type="number" min={0} {...register("runsConceded")} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Wickets</Label>
-                  <Input type="number" min={0} max={10} {...register("wickets")} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Maidens</Label>
-                  <Input type="number" min={0} {...register("maidens")} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Wides</Label>
-                  <Input type="number" min={0} {...register("wides")} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>No Balls</Label>
-                  <Input type="number" min={0} {...register("noBalls")} />
-                </div>
-              </div>
-              <div className="p-3 rounded-lg bg-[#0A0F1E] border border-[#1F2937] text-sm">
-                <span className="text-[#6B7280]">Economy Rate: </span>
-                <span className="text-[#F59E0B] font-mono font-semibold">{economy}</span>
-              </div>
-            </>
-          )}
+                <LiveStat label="Economy Rate" value={economy} accent="#F59E0B" />
+              </>
+            )}
 
-          {/* Step 4: Fielding */}
-          {step === 4 && (
-            <>
-              <h2 className="text-lg font-semibold text-white">Fielding Performance</h2>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <Label>Catches</Label>
+            {/* Step 4: Fielding */}
+            {step === 4 && (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <Field label="Catches">
                   <Input type="number" min={0} {...register("catches")} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Run Outs</Label>
+                </Field>
+                <Field label="Run Outs">
                   <Input type="number" min={0} {...register("runOuts")} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Stumpings</Label>
+                </Field>
+                <Field label="Stumpings">
                   <Input type="number" min={0} {...register("stumpings")} />
-                </div>
+                </Field>
               </div>
-            </>
-          )}
+            )}
 
-          {/* Step 5: Review */}
-          {step === 5 && (
-            <>
-              <h2 className="text-lg font-semibold text-white">Review &amp; Save</h2>
-              <div className="space-y-3">
-                <ReviewRow label="Match" value={`vs ${values.opponent} · ${values.format} · ${values.result}`} />
-                <ReviewRow label="Date" value={values.date} />
-                {values.venue && <ReviewRow label="Venue" value={values.venue} />}
-                <div className="border-t border-[#1F2937] pt-3">
-                  <p className="text-xs text-[#6B7280] uppercase tracking-wider mb-2">Batting</p>
-                  <ReviewRow label="Runs/Balls" value={`${values.runs}(${values.balls})`} />
-                  <ReviewRow label="4s/6s" value={`${values.fours}/${values.sixes}`} />
-                  <ReviewRow label="Dismissal" value={values.dismissalType} />
+            {/* Step 5: Review */}
+            {step === 5 && (
+              <div className="space-y-4">
+                <div className="rounded-xl border border-[#1B212C] bg-[#07090D] p-4">
+                  <ReviewRow label="Match" value={`vs ${values.opponent} · ${values.format} · ${values.result}`} />
+                  <ReviewRow label="Date" value={values.date} />
+                  {values.venue && <ReviewRow label="Venue" value={values.venue} />}
                 </div>
-                <div className="border-t border-[#1F2937] pt-3">
-                  <p className="text-xs text-[#6B7280] uppercase tracking-wider mb-2">Bowling</p>
+                <ReviewSection title="Batting" accent="#10B981">
+                  <ReviewRow label="Runs / Balls" value={`${values.runs} (${values.balls})`} />
+                  <ReviewRow label="4s / 6s" value={`${values.fours} / ${values.sixes}`} />
+                  <ReviewRow label="Dismissal" value={values.dismissalType} />
+                </ReviewSection>
+                <ReviewSection title="Bowling" accent="#F59E0B">
                   <ReviewRow label="Figures" value={`${values.wickets}/${values.runsConceded} (${values.overs} ov)`} />
                   <ReviewRow label="Economy" value={economy} />
-                </div>
-                <div className="border-t border-[#1F2937] pt-3">
-                  <p className="text-xs text-[#6B7280] uppercase tracking-wider mb-2">Fielding</p>
-                  <ReviewRow label="C/RO/St" value={`${values.catches}/${values.runOuts}/${values.stumpings}`} />
-                </div>
+                </ReviewSection>
+                <ReviewSection title="Fielding" accent="#38BDF8">
+                  <ReviewRow label="Ct / RO / St" value={`${values.catches} / ${values.runOuts} / ${values.stumpings}`} />
+                </ReviewSection>
               </div>
-            </>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between mt-6">
+        <div className="mt-6 flex items-center justify-between">
           <Button
             type="button"
             variant="ghost"
             onClick={() => step > 1 && setStep(step - 1)}
             disabled={step === 1}
-            className="text-[#6B7280]"
+            className="text-[#8A93A3] hover:text-white"
           >
-            <ChevronLeft className="w-4 h-4 mr-1" />
+            <ChevronLeft className="mr-1 h-4 w-4" />
             Back
           </Button>
 
@@ -420,20 +465,29 @@ export default function NewMatchPage() {
             <Button
               type="button"
               onClick={goNext}
-              className="bg-[#00D4AA] text-[#0A0F1E] hover:bg-[#00D4AA]/90 font-semibold"
+              className="bg-emerald-500 px-6 font-semibold text-black shadow-lg shadow-emerald-500/20 hover:bg-emerald-400"
             >
-              Next
-              <ChevronRight className="w-4 h-4 ml-1" />
+              Continue
+              <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           ) : (
             <Button
               type="button"
               onClick={handleSave}
               disabled={loading}
-              className="bg-[#00D4AA] text-[#0A0F1E] hover:bg-[#00D4AA]/90 font-semibold"
+              className="bg-emerald-500 px-6 font-semibold text-black shadow-lg shadow-emerald-500/20 hover:bg-emerald-400"
             >
-              {loading ? "Saving..." : "Save Match"}
-              <Trophy className="w-4 h-4 ml-1" />
+              {loading ? (
+                <>
+                  <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-black/30 border-t-black" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  Save Match
+                  <Trophy className="ml-1.5 h-4 w-4" />
+                </>
+              )}
             </Button>
           )}
         </div>
@@ -442,11 +496,33 @@ export default function NewMatchPage() {
   );
 }
 
+function ReviewSection({
+  title,
+  accent,
+  children,
+}: {
+  title: string;
+  accent: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-[#1B212C] bg-[#07090D] p-4">
+      <p
+        className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em]"
+        style={{ color: accent }}
+      >
+        {title}
+      </p>
+      {children}
+    </div>
+  );
+}
+
 function ReviewRow({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="flex justify-between py-1">
-      <span className="text-sm text-[#6B7280]">{label}</span>
-      <span className="text-sm font-medium text-white stat-mono">{value}</span>
+      <span className="text-sm text-[#8A93A3]">{label}</span>
+      <span className="stat-mono text-sm font-medium tabular-nums text-white">{value}</span>
     </div>
   );
 }

@@ -11,42 +11,42 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        border: "#1F2937",
-        input: "#1F2937",
-        ring: "#00D4AA",
-        background: "#0A0F1E",
+        border: "#1B212C",
+        input: "#1B212C",
+        ring: "#10B981",
+        background: "#07090D",
         foreground: "#F9FAFB",
         primary: {
-          DEFAULT: "#00D4AA",
-          foreground: "#0A0F1E",
+          DEFAULT: "#10B981",
+          foreground: "#07090D",
         },
         secondary: {
           DEFAULT: "#F59E0B",
-          foreground: "#0A0F1E",
+          foreground: "#07090D",
         },
         destructive: {
           DEFAULT: "#EF4444",
           foreground: "#F9FAFB",
         },
         muted: {
-          DEFAULT: "#111827",
+          DEFAULT: "#0C1015",
           foreground: "#6B7280",
         },
         accent: {
-          DEFAULT: "#00D4AA",
-          foreground: "#0A0F1E",
+          DEFAULT: "#10B981",
+          foreground: "#07090D",
         },
         popover: {
-          DEFAULT: "#111827",
+          DEFAULT: "#0C1015",
           foreground: "#F9FAFB",
         },
         card: {
-          DEFAULT: "#111827",
+          DEFAULT: "#0C1015",
           foreground: "#F9FAFB",
         },
-        surface: "#111827",
-        navy: "#0A0F1E",
-        teal: "#00D4AA",
+        surface: "#0C1015",
+        navy: "#07090D",
+        teal: "#10B981",
         amber: "#F59E0B",
       },
       fontFamily: {

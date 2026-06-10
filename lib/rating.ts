@@ -86,7 +86,7 @@ export function getRatingLabel(rating: number): string {
 }
 
 export function getRatingColor(rating: number): string {
-  if (rating >= 85) return "#00D4AA";
+  if (rating >= 85) return "#10B981";
   if (rating >= 70) return "#10B981";
   if (rating >= 55) return "#F59E0B";
   if (rating >= 40) return "#F97316";

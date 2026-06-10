@@ -3,9 +3,56 @@ import { prisma } from "@/lib/prisma";
 import { redirect, notFound } from "next/navigation";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Activity, Target, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+
+function DisciplineCard({
+  icon: Icon,
+  title,
+  accent,
+  headline,
+  sub,
+  rows,
+}: {
+  icon: React.ElementType;
+  title: string;
+  accent: string;
+  headline: string;
+  sub: string;
+  rows: Array<{ label: string; value: string | number; highlight?: boolean }>;
+}) {
+  return (
+    <div className="rounded-xl border border-[#1B212C] bg-[#0C1015] p-5">
+      <div className="mb-4 flex items-center gap-2">
+        <div
+          className="flex h-7 w-7 items-center justify-center rounded-lg"
+          style={{ background: `${accent}14`, border: `1px solid ${accent}26` }}
+        >
+          <Icon className="h-3.5 w-3.5" style={{ color: accent }} />
+        </div>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6B7484]">
+          {title}
+        </p>
+      </div>
+      <p className="stat-mono text-3xl font-bold tabular-nums text-white">{headline}</p>
+      <p className="mt-0.5 text-sm text-[#6B7484]">{sub}</p>
+      <div className="mt-4 space-y-2 border-t border-[#161B24] pt-4 text-sm">
+        {rows.map((r) => (
+          <div key={r.label} className="flex justify-between">
+            <span className="text-[#6B7484]">{r.label}</span>
+            <span
+              className="stat-mono tabular-nums"
+              style={r.highlight ? { color: accent, fontWeight: 600 } : { color: "#fff" }}
+            >
+              {r.value}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default async function MatchDetailPage({ params }: { params: { id: string } }) {
   const session = await auth();
@@ -26,73 +73,82 @@ export default async function MatchDetailPage({ params }: { params: { id: string
     : "—";
 
   return (
-    <div className="p-6 max-w-2xl space-y-6">
-      <div className="flex items-center gap-3">
-        <Button asChild variant="ghost" size="sm" className="text-[#6B7280]">
+    <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
+      {/* Header */}
+      <div>
+        <Button asChild variant="ghost" size="sm" className="-ml-2 mb-3 text-[#8A93A3] hover:text-white">
           <Link href="/matches">
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back
+            <ChevronLeft className="mr-1 h-4 w-4" />
+            Match History
           </Link>
         </Button>
-        <div>
-          <h2 className="text-xl font-bold text-white">vs {match.opponent}</h2>
-          <p className="text-sm text-[#6B7280]">{formatDate(match.date)} · {match.venue}</p>
-        </div>
-        <div className="ml-auto flex gap-2">
-          <Badge>{match.format}</Badge>
-          <Badge variant={match.result === "Won" ? "success" : match.result === "Lost" ? "danger" : "warning"}>
-            {match.result}
-          </Badge>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-white">
+              vs {match.opponent}
+            </h1>
+            <p className="mt-1 text-sm text-[#8A93A3]">
+              {formatDate(match.date)}
+              {match.venue ? ` · ${match.venue}` : ""}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Badge variant="outline">{match.format}</Badge>
+            <Badge variant={match.result === "Won" ? "success" : match.result === "Lost" ? "danger" : "warning"}>
+              {match.result}
+            </Badge>
+          </div>
         </div>
       </div>
 
       {match.notes && (
-        <div className="p-4 rounded-xl bg-[#111827] border border-[#1F2937]">
-          <p className="text-xs text-[#6B7280] uppercase tracking-wider mb-1">Notes</p>
-          <p className="text-sm text-white">{match.notes}</p>
+        <div className="rounded-xl border border-[#1B212C] bg-[#0C1015] p-4">
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6B7484]">
+            Notes
+          </p>
+          <p className="text-sm leading-relaxed text-[#D7DCE4]">{match.notes}</p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Batting */}
-        <div className="rounded-xl bg-[#111827] border border-[#1F2937] p-4">
-          <p className="text-xs text-[#6B7280] uppercase tracking-wider mb-3">Batting</p>
-          <p className="text-3xl font-bold text-white stat-mono">{match.batting?.runs ?? 0}</p>
-          <p className="text-sm text-[#6B7280]">({match.batting?.balls ?? 0} balls)</p>
-          <div className="mt-3 space-y-1.5 text-sm">
-            <div className="flex justify-between"><span className="text-[#6B7280]">4s</span><span className="font-mono text-white">{match.batting?.fours ?? 0}</span></div>
-            <div className="flex justify-between"><span className="text-[#6B7280]">6s</span><span className="font-mono text-white">{match.batting?.sixes ?? 0}</span></div>
-            <div className="flex justify-between"><span className="text-[#6B7280]">SR</span><span className="font-mono text-[#00D4AA]">{sr}</span></div>
-            <div className="flex justify-between"><span className="text-[#6B7280]">Out</span><span className="text-white">{match.batting?.dismissalType ?? "—"}</span></div>
-          </div>
-        </div>
-
-        {/* Bowling */}
-        <div className="rounded-xl bg-[#111827] border border-[#1F2937] p-4">
-          <p className="text-xs text-[#6B7280] uppercase tracking-wider mb-3">Bowling</p>
-          <p className="text-3xl font-bold text-white stat-mono">{match.bowling?.wickets ?? 0}/{match.bowling?.runsConceded ?? 0}</p>
-          <p className="text-sm text-[#6B7280]">({match.bowling?.overs ?? 0} overs)</p>
-          <div className="mt-3 space-y-1.5 text-sm">
-            <div className="flex justify-between"><span className="text-[#6B7280]">Economy</span><span className="font-mono text-[#F59E0B]">{economy}</span></div>
-            <div className="flex justify-between"><span className="text-[#6B7280]">Maidens</span><span className="font-mono text-white">{match.bowling?.maidens ?? 0}</span></div>
-            <div className="flex justify-between"><span className="text-[#6B7280]">Wides</span><span className="font-mono text-white">{match.bowling?.wides ?? 0}</span></div>
-            <div className="flex justify-between"><span className="text-[#6B7280]">No Balls</span><span className="font-mono text-white">{match.bowling?.noBalls ?? 0}</span></div>
-          </div>
-        </div>
-
-        {/* Fielding */}
-        <div className="rounded-xl bg-[#111827] border border-[#1F2937] p-4">
-          <p className="text-xs text-[#6B7280] uppercase tracking-wider mb-3">Fielding</p>
-          <p className="text-3xl font-bold text-white stat-mono">
-            {(match.fielding?.catches ?? 0) + (match.fielding?.runOuts ?? 0) + (match.fielding?.stumpings ?? 0)}
-          </p>
-          <p className="text-sm text-[#6B7280]">dismissals</p>
-          <div className="mt-3 space-y-1.5 text-sm">
-            <div className="flex justify-between"><span className="text-[#6B7280]">Catches</span><span className="font-mono text-white">{match.fielding?.catches ?? 0}</span></div>
-            <div className="flex justify-between"><span className="text-[#6B7280]">Run Outs</span><span className="font-mono text-white">{match.fielding?.runOuts ?? 0}</span></div>
-            <div className="flex justify-between"><span className="text-[#6B7280]">Stumpings</span><span className="font-mono text-white">{match.fielding?.stumpings ?? 0}</span></div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <DisciplineCard
+          icon={Activity}
+          title="Batting"
+          accent="#10B981"
+          headline={`${match.batting?.runs ?? 0}`}
+          sub={`${match.batting?.balls ?? 0} balls faced`}
+          rows={[
+            { label: "Fours", value: match.batting?.fours ?? 0 },
+            { label: "Sixes", value: match.batting?.sixes ?? 0 },
+            { label: "Strike Rate", value: sr, highlight: true },
+            { label: "Dismissal", value: match.batting?.dismissalType ?? "—" },
+          ]}
+        />
+        <DisciplineCard
+          icon={Target}
+          title="Bowling"
+          accent="#F59E0B"
+          headline={`${match.bowling?.wickets ?? 0}/${match.bowling?.runsConceded ?? 0}`}
+          sub={`${match.bowling?.overs ?? 0} overs bowled`}
+          rows={[
+            { label: "Economy", value: economy, highlight: true },
+            { label: "Maidens", value: match.bowling?.maidens ?? 0 },
+            { label: "Wides", value: match.bowling?.wides ?? 0 },
+            { label: "No Balls", value: match.bowling?.noBalls ?? 0 },
+          ]}
+        />
+        <DisciplineCard
+          icon={Shield}
+          title="Fielding"
+          accent="#38BDF8"
+          headline={`${(match.fielding?.catches ?? 0) + (match.fielding?.runOuts ?? 0) + (match.fielding?.stumpings ?? 0)}`}
+          sub="total dismissals"
+          rows={[
+            { label: "Catches", value: match.fielding?.catches ?? 0 },
+            { label: "Run Outs", value: match.fielding?.runOuts ?? 0 },
+            { label: "Stumpings", value: match.fielding?.stumpings ?? 0 },
+          ]}
+        />
       </div>
     </div>
   );

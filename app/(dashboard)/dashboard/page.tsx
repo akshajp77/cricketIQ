@@ -12,6 +12,8 @@ import {
 import { calculateCricketIQRating } from "@/lib/rating";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { RatingGauge } from "@/components/dashboard/RatingGauge";
+import { PageHeader } from "@/components/dashboard/PageHeader";
+import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import {
   Activity,
@@ -20,25 +22,34 @@ import {
   TrendingUp,
   Plus,
   Flame,
+  Hand,
+  ClipboardList,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
-// Bat icon fallback since lucide may not have it
-import { Swords } from "lucide-react";
+// Discipline accents — consistent with the RatingGauge breakdown:
+// batting = emerald, bowling = amber, fielding = sky, form/volume = violet
+const ACCENT = {
+  batting: "#10B981",
+  bowling: "#F59E0B",
+  fielding: "#38BDF8",
+  form: "#A78BFA",
+};
 
-function getResultColor(result: string) {
-  if (result === "Won") return "text-emerald-400 bg-emerald-400/10";
-  if (result === "Lost") return "text-red-400 bg-red-400/10";
-  return "text-amber-400 bg-amber-400/10";
+function getResultStyle(result: string) {
+  if (result === "Won") return "bg-emerald-500/10 text-emerald-400";
+  if (result === "Lost") return "bg-red-500/10 text-red-400";
+  return "bg-amber-500/10 text-amber-400";
 }
 
-function getPerformanceColor(runs: number): string {
-  if (runs >= 50) return "border-l-2 border-emerald-500";
-  if (runs >= 30) return "border-l-2 border-[#00D4AA]";
-  if (runs < 15) return "border-l-2 border-red-500";
-  return "border-l-2 border-[#1F2937]";
+function getPerformanceBorder(runs: number): string {
+  if (runs >= 50) return "border-l-2 border-emerald-400";
+  if (runs >= 30) return "border-l-2 border-emerald-500/40";
+  if (runs < 15) return "border-l-2 border-red-500/40";
+  return "border-l-2 border-transparent";
 }
 
 export default async function DashboardPage() {
@@ -68,63 +79,70 @@ export default async function DashboardPage() {
 
   if (matches.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 px-6">
-        <div className="w-16 h-16 rounded-2xl bg-[#00D4AA]/10 flex items-center justify-center">
-          <Swords className="w-8 h-8 text-[#00D4AA]" />
-        </div>
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-white">No matches yet</h2>
-          <p className="text-[#6B7280] mt-1">Add your first match to start tracking your performance</p>
-        </div>
-        <Button asChild className="bg-[#00D4AA] text-[#0A0F1E] hover:bg-[#00D4AA]/90 font-semibold">
-          <Link href="/matches/new">
-            <Plus className="w-4 h-4 mr-2" />
-            Add First Match
-          </Link>
-        </Button>
+      <div className="mx-auto max-w-3xl p-6 pt-16">
+        <EmptyState
+          icon={ClipboardList}
+          title="Your scorecard is empty"
+          description="Log your first match to unlock your CricketIQ Rating, performance trends, and AI coaching insights."
+          action={
+            <Button
+              asChild
+              className="bg-emerald-500 font-semibold text-black shadow-lg shadow-emerald-500/20 hover:bg-emerald-400"
+            >
+              <Link href="/matches/new">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Your First Match
+              </Link>
+            </Button>
+          }
+        />
       </div>
     );
   }
 
+  const firstName = session.user.name?.split(" ")[0] ?? "Player";
+
   return (
-    <div className="p-6 space-y-6 max-w-7xl">
-      {/* Welcome header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-white">
-            Hey, {session.user.name?.split(" ")[0]} 👋
-          </h2>
-          <p className="text-[#6B7280] text-sm mt-0.5">
-            {matches.length} matches tracked · Form: {" "}
-            <span className={cn("font-medium", { "text-emerald-400": trend.direction === "up", "text-red-400": trend.direction === "down", "text-amber-400": trend.direction === "stable" })}>
+    <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
+      <PageHeader
+        kicker="Overview"
+        title={`Welcome back, ${firstName}`}
+        description={
+          <span>
+            {matches.length} {matches.length === 1 ? "match" : "matches"} tracked
+            <span className="mx-1.5 text-[#3A4150]">·</span>
+            Form:{" "}
+            <span
+              className={cn("font-medium", {
+                "text-emerald-400": trend.direction === "up",
+                "text-red-400": trend.direction === "down",
+                "text-amber-400": trend.direction === "stable",
+              })}
+            >
               {trend.label}
             </span>
-          </p>
-        </div>
-        <Button asChild size="sm" className="bg-[#00D4AA] text-[#0A0F1E] hover:bg-[#00D4AA]/90 font-semibold hidden sm:flex">
-          <Link href="/matches/new">
-            <Plus className="w-4 h-4 mr-1" />
-            New Match
-          </Link>
-        </Button>
-      </div>
+          </span>
+        }
+      />
 
-      {/* Rating + Batting Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      {/* Rating + stat grid */}
+      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-4">
         {/* CricketIQ Rating */}
-        <div className="lg:col-span-1 rounded-xl border border-[#1F2937] bg-[#111827] p-5">
-          <p className="text-xs text-[#6B7280] font-medium uppercase tracking-wider mb-4">CricketIQ Rating</p>
+        <div className="rounded-xl border border-[#1B212C] bg-[#0C1015] p-5 lg:col-span-1">
+          <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6B7484]">
+            CricketIQ Rating
+          </p>
           <RatingGauge breakdown={rating} />
         </div>
 
-        {/* Batting Cards */}
-        <div className="lg:col-span-3 grid grid-cols-2 sm:grid-cols-3 gap-4">
+        {/* Stat cards */}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:col-span-3">
           <StatCard
             title="Batting Avg"
             value={batting.battingAvg}
             decimals={2}
-            icon={<Activity className="w-5 h-5" style={{ color: "#00D4AA" }} />}
-            iconColor="#00D4AA"
+            icon={<Activity className="h-4 w-4" style={{ color: ACCENT.batting }} />}
+            iconColor={ACCENT.batting}
             sparklineData={sparklines.runs}
             trend={trend}
             subStats={[
@@ -136,8 +154,8 @@ export default async function DashboardPage() {
             title="Strike Rate"
             value={batting.strikeRate}
             decimals={1}
-            icon={<Flame className="w-5 h-5" style={{ color: "#F59E0B" }} />}
-            iconColor="#F59E0B"
+            icon={<Flame className="h-4 w-4" style={{ color: ACCENT.batting }} />}
+            iconColor={ACCENT.batting}
             sparklineData={sparklines.runs}
             subStats={[
               { label: "Balls", value: batting.totalBalls },
@@ -147,8 +165,8 @@ export default async function DashboardPage() {
           <StatCard
             title="Innings"
             value={batting.innings}
-            icon={<TrendingUp className="w-5 h-5" style={{ color: "#8B5CF6" }} />}
-            iconColor="#8B5CF6"
+            icon={<TrendingUp className="h-4 w-4" style={{ color: ACCENT.form }} />}
+            iconColor={ACCENT.form}
             subStats={[
               { label: "50s", value: batting.fifties },
               { label: "100s", value: batting.hundreds },
@@ -157,8 +175,8 @@ export default async function DashboardPage() {
           <StatCard
             title="Wickets"
             value={bowling.totalWickets}
-            icon={<Target className="w-5 h-5" style={{ color: "#EC4899" }} />}
-            iconColor="#EC4899"
+            icon={<Target className="h-4 w-4" style={{ color: ACCENT.bowling }} />}
+            iconColor={ACCENT.bowling}
             sparklineData={sparklines.wickets}
             subStats={[
               { label: "Best", value: bowling.bestFigures },
@@ -169,8 +187,8 @@ export default async function DashboardPage() {
             title="Economy"
             value={bowling.economy}
             decimals={2}
-            icon={<Shield className="w-5 h-5" style={{ color: "#06B6D4" }} />}
-            iconColor="#06B6D4"
+            icon={<Shield className="h-4 w-4" style={{ color: ACCENT.bowling }} />}
+            iconColor={ACCENT.bowling}
             sparklineData={sparklines.economy}
             subStats={[
               { label: "Overs", value: bowling.totalOvers.toFixed(1) },
@@ -180,8 +198,8 @@ export default async function DashboardPage() {
           <StatCard
             title="Catches"
             value={fielding.totalCatches}
-            icon={<Swords className="w-5 h-5" style={{ color: "#F97316" }} />}
-            iconColor="#F97316"
+            icon={<Hand className="h-4 w-4" style={{ color: ACCENT.fielding }} />}
+            iconColor={ACCENT.fielding}
             subStats={[
               { label: "Run Outs", value: fielding.totalRunOuts },
               { label: "Stumpings", value: fielding.totalStumpings },
@@ -191,31 +209,67 @@ export default async function DashboardPage() {
       </div>
 
       {/* Recent Matches */}
-      <div className="rounded-xl border border-[#1F2937] bg-[#111827] overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#1F2937]">
-          <h3 className="font-semibold text-white">Recent Matches</h3>
-          <Link href="/matches" className="text-xs text-[#00D4AA] hover:underline">View all →</Link>
+      <div className="overflow-hidden rounded-xl border border-[#1B212C] bg-[#0C1015]">
+        <div className="flex items-center justify-between border-b border-[#161B24] px-5 py-4">
+          <h3 className="text-sm font-semibold text-white">Recent Matches</h3>
+          <Link
+            href="/matches"
+            className="group flex items-center gap-1 text-xs font-medium text-emerald-400 transition-colors hover:text-emerald-300"
+          >
+            View all
+            <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+          </Link>
         </div>
-        <div className="divide-y divide-[#1F2937]">
+        <div className="divide-y divide-[#161B24]">
           {recentMatches.map((match: FullMatch) => (
-            <Link key={match.id} href={`/matches/${match.id}`} className={cn("flex items-center gap-4 px-5 py-3 hover:bg-[#1F2937]/40 transition-colors", getPerformanceColor(match.batting?.runs ?? 0))}>
-              <div className="flex-1 min-w-0">
+            <Link
+              key={match.id}
+              href={`/matches/${match.id}`}
+              className={cn(
+                "flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-white/[0.02]",
+                getPerformanceBorder(match.batting?.runs ?? 0)
+              )}
+            >
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-white truncate">vs {match.opponent}</p>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#1F2937] text-[#6B7280] flex-shrink-0">{match.format}</span>
+                  <p className="truncate text-sm font-medium text-white">
+                    vs {match.opponent}
+                  </p>
+                  <span className="flex-shrink-0 rounded border border-[#1B212C] bg-white/[0.02] px-1.5 py-px text-[10px] font-medium text-[#6B7484]">
+                    {match.format}
+                  </span>
                 </div>
-                <p className="text-xs text-[#6B7280] mt-0.5">{formatDate(match.date)} · {match.venue}</p>
+                <p className="mt-0.5 text-xs text-[#6B7484]">
+                  {formatDate(match.date)}
+                  {match.venue ? ` · ${match.venue}` : ""}
+                </p>
               </div>
-              <div className="flex items-center gap-4 flex-shrink-0">
+              <div className="flex flex-shrink-0 items-center gap-5">
                 <div className="text-right">
-                  <p className="text-sm font-bold text-white stat-mono">{match.batting?.runs ?? 0}</p>
-                  <p className="text-[10px] text-[#6B7280]">runs</p>
+                  <p className="stat-mono text-sm font-bold tabular-nums text-white">
+                    {match.batting?.runs ?? 0}
+                    <span className="text-[#5A6372]">
+                      ({match.batting?.balls ?? 0})
+                    </span>
+                  </p>
+                  <p className="text-[10px] uppercase tracking-wider text-[#5A6372]">
+                    Bat
+                  </p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-white stat-mono">{match.bowling?.wickets ?? 0}/{(match.bowling?.runsConceded ?? 0)}</p>
-                  <p className="text-[10px] text-[#6B7280]">bowl</p>
+                <div className="hidden text-right sm:block">
+                  <p className="stat-mono text-sm font-bold tabular-nums text-white">
+                    {match.bowling?.wickets ?? 0}/{match.bowling?.runsConceded ?? 0}
+                  </p>
+                  <p className="text-[10px] uppercase tracking-wider text-[#5A6372]">
+                    Bowl
+                  </p>
                 </div>
-                <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", getResultColor(match.result))}>
+                <span
+                  className={cn(
+                    "w-14 rounded-full px-2 py-1 text-center text-[11px] font-semibold",
+                    getResultStyle(match.result)
+                  )}
+                >
                   {match.result}
                 </span>
               </div>

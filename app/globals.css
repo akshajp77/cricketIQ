@@ -5,12 +5,12 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 
 :root {
-  --background: #0A0F1E;
+  --background: #07090D;
   --foreground: #F9FAFB;
-  --primary: #00D4AA;
+  --primary: #10B981;
   --secondary: #F59E0B;
-  --surface: #111827;
-  --border: #1F2937;
+  --surface: #0C1015;
+  --border: #1B212C;
   --muted: #6B7280;
 }
 
@@ -35,15 +35,15 @@ body {
   }
 
   .glass {
-    background: rgba(17, 24, 39, 0.7);
+    background: rgba(12, 16, 21, 0.7);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(31, 41, 55, 0.8);
+    border: 1px solid rgba(27, 33, 44, 0.8);
   }
 
   .glass-sm {
-    background: rgba(17, 24, 39, 0.5);
+    background: rgba(12, 16, 21, 0.5);
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(31, 41, 55, 0.6);
+    border: 1px solid rgba(27, 33, 44, 0.6);
   }
 
   .stat-mono {
@@ -51,7 +51,7 @@ body {
   }
 
   .gradient-teal {
-    background: linear-gradient(135deg, #00D4AA 0%, #0093A8 100%);
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
   }
 
   .gradient-amber {
@@ -59,7 +59,7 @@ body {
   }
 
   .neon-glow {
-    box-shadow: 0 0 20px rgba(0, 212, 170, 0.3);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
   }
 
   .scrollbar-thin::-webkit-scrollbar {
@@ -67,32 +67,32 @@ body {
   }
 
   .scrollbar-thin::-webkit-scrollbar-track {
-    background: #0A0F1E;
+    background: #07090D;
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #1F2937;
+    background: #1B212C;
     border-radius: 2px;
   }
 }
 
 /* Custom recharts styles */
 .recharts-tooltip-wrapper .recharts-default-tooltip {
-  background: #111827 !important;
-  border: 1px solid #1F2937 !important;
+  background: #0C1015 !important;
+  border: 1px solid #1B212C !important;
   border-radius: 8px !important;
   color: #F9FAFB !important;
 }
 
 .recharts-cartesian-grid line {
-  stroke: #1F2937 !important;
+  stroke: #1B212C !important;
 }
 
 /* Sidebar active link highlight */
 .sidebar-link.active {
-  background: rgba(0, 212, 170, 0.12);
-  color: #00D4AA;
-  border-right: 2px solid #00D4AA;
+  background: rgba(16, 185, 129, 0.12);
+  color: #10B981;
+  border-right: 2px solid #10B981;
 }
 
 /* Legal pages (Privacy, Terms) prose styling */
@@ -136,14 +136,14 @@ body {
   width: 6px;
   height: 6px;
   border-radius: 9999px;
-  background: #00D4AA;
+  background: #10B981;
 }
 .legal-prose strong {
   color: #F9FAFB;
   font-weight: 600;
 }
 .legal-prose a {
-  color: #00D4AA;
+  color: #10B981;
   text-decoration: underline;
   text-underline-offset: 2px;
 }

@@ -6,101 +6,157 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { LogOut, Trash2, Bell, Shield, Moon } from "lucide-react";
+import { PageHeader } from "@/components/dashboard/PageHeader";
+import { LogOut, Trash2, Bell, Shield, Moon, Download } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+function SettingsCard({
+  icon: Icon,
+  accent,
+  title,
+  children,
+}: {
+  icon: React.ElementType;
+  accent: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-[#1B212C] bg-[#0C1015] p-6">
+      <h3 className="mb-5 flex items-center gap-2.5 text-sm font-semibold text-white">
+        <span
+          className="flex h-7 w-7 items-center justify-center rounded-lg"
+          style={{ background: `${accent}14`, border: `1px solid ${accent}26` }}
+        >
+          <Icon className="h-3.5 w-3.5" style={{ color: accent }} />
+        </span>
+        {title}
+      </h3>
+      {children}
+    </div>
+  );
+}
+
+function Toggle({
+  on,
+  disabled,
+  onClick,
+}: {
+  on: boolean;
+  disabled?: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "flex h-6 w-11 items-center rounded-full px-0.5 transition-colors",
+        on ? "bg-emerald-500" : "bg-[#1B212C]",
+        disabled && "cursor-not-allowed opacity-50"
+      )}
+    >
+      <span
+        className={cn(
+          "h-5 w-5 rounded-full bg-white shadow transition-transform",
+          on && "translate-x-5"
+        )}
+      />
+    </button>
+  );
+}
 
 export default function SettingsPage() {
   const [notifications, setNotifications] = useState(true);
 
   return (
-    <div className="p-6 max-w-2xl space-y-6">
+    <div className="mx-auto max-w-2xl space-y-5 p-4 sm:p-6">
+      <PageHeader
+        kicker="Preferences"
+        title="Settings"
+        description="Manage your account and app preferences."
+      />
+
       {/* Appearance */}
-      <div className="rounded-xl border border-[#1F2937] bg-[#111827] p-6">
-        <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-          <Moon className="w-4 h-4 text-[#00D4AA]" />
-          Appearance
-        </h3>
-        <div className="flex items-center justify-between">
+      <SettingsCard icon={Moon} accent="#A78BFA" title="Appearance">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <Label className="text-white">Dark Mode</Label>
-            <p className="text-xs text-[#6B7280] mt-0.5">CricketIQ uses dark mode by default for optimal stats viewing</p>
+            <Label className="text-sm text-white">Dark Mode</Label>
+            <p className="mt-0.5 text-xs text-[#6B7484]">
+              CricketIQ uses dark mode by default for optimal stats viewing
+            </p>
           </div>
-          <div className="w-10 h-6 rounded-full bg-[#00D4AA] flex items-center px-1 cursor-not-allowed opacity-60">
-            <div className="w-4 h-4 rounded-full bg-white ml-auto" />
-          </div>
+          <Toggle on disabled />
         </div>
-      </div>
+      </SettingsCard>
 
       {/* Notifications */}
-      <div className="rounded-xl border border-[#1F2937] bg-[#111827] p-6">
-        <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-          <Bell className="w-4 h-4 text-[#F59E0B]" />
-          Notifications
-        </h3>
-        <div className="flex items-center justify-between">
+      <SettingsCard icon={Bell} accent="#F59E0B" title="Notifications">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <Label className="text-white">Match reminders</Label>
-            <p className="text-xs text-[#6B7280] mt-0.5">Get reminded to log your match performance</p>
+            <Label className="text-sm text-white">Match reminders</Label>
+            <p className="mt-0.5 text-xs text-[#6B7484]">
+              Get reminded to log your match performance
+            </p>
           </div>
-          <button
-            onClick={() => { setNotifications(!notifications); toast.success(notifications ? "Notifications disabled" : "Notifications enabled"); }}
-            className={`w-10 h-6 rounded-full transition-colors flex items-center px-1 ${notifications ? "bg-[#00D4AA]" : "bg-[#1F2937]"}`}
-          >
-            <div className={`w-4 h-4 rounded-full bg-white transition-transform ${notifications ? "ml-auto" : ""}`} />
-          </button>
+          <Toggle
+            on={notifications}
+            onClick={() => {
+              setNotifications(!notifications);
+              toast.success(notifications ? "Notifications disabled" : "Notifications enabled");
+            }}
+          />
         </div>
-      </div>
+      </SettingsCard>
 
       {/* Privacy */}
-      <div className="rounded-xl border border-[#1F2937] bg-[#111827] p-6">
-        <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-          <Shield className="w-4 h-4 text-[#8B5CF6]" />
-          Privacy & Data
-        </h3>
-        <div className="space-y-3 text-sm text-[#9CA3AF]">
+      <SettingsCard icon={Shield} accent="#38BDF8" title="Privacy & Data">
+        <div className="space-y-2.5 text-sm leading-relaxed text-[#8A93A3]">
           <p>Your cricket performance data is private and only visible to you.</p>
-          <p>AI analysis is powered by OpenAI GPT-4o. Match data is sent to generate insights but is not stored by OpenAI beyond the API call.</p>
+          <p>
+            AI analysis is powered by OpenAI GPT-4o. Match data is sent to generate
+            insights but is not stored by OpenAI beyond the API call.
+          </p>
         </div>
         <Separator className="my-4" />
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
-          className="text-[#6B7280] hover:text-white"
           onClick={() => toast.info("Data export feature coming soon")}
         >
+          <Download className="mr-2 h-3.5 w-3.5" />
           Export my data
         </Button>
-      </div>
+      </SettingsCard>
 
       {/* Account */}
-      <div className="rounded-xl border border-[#1F2937] bg-[#111827] p-6">
-        <h3 className="font-semibold text-white mb-4">Account</h3>
-        <div className="space-y-3">
+      <SettingsCard icon={LogOut} accent="#10B981" title="Account">
+        <div className="space-y-2">
           <Button
             variant="outline"
-            className="w-full justify-start text-[#6B7280]"
+            className="w-full justify-start text-[#B6BDC9]"
             onClick={() => signOut({ callbackUrl: "/auth/signin" })}
           >
-            <LogOut className="w-4 h-4 mr-2" />
+            <LogOut className="mr-2 h-4 w-4" />
             Sign Out
           </Button>
           <Button
             variant="ghost"
-            className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-400/10"
+            className="w-full justify-start text-red-400 hover:bg-red-500/10 hover:text-red-300"
             onClick={() => toast.error("Account deletion requires email confirmation. Feature coming soon.")}
           >
-            <Trash2 className="w-4 h-4 mr-2" />
+            <Trash2 className="mr-2 h-4 w-4" />
             Delete Account
           </Button>
         </div>
-      </div>
+      </SettingsCard>
 
       {/* About */}
-      <div className="text-center text-xs text-[#6B7280] space-y-1">
+      <div className="space-y-1 pt-2 text-center text-xs text-[#5A6372]">
         <p>CricketIQ v1.0.0 — AI Cricket Analytics Platform</p>
-        <p>Built with Next.js 14, Prisma, and Google Gemini</p>
         <div className="flex items-center justify-center gap-4 pt-2">
-          <a href="/privacy" className="hover:text-[#00D4AA] transition-colors">Privacy Policy</a>
-          <a href="/terms" className="hover:text-[#00D4AA] transition-colors">Terms of Service</a>
+          <a href="/privacy" className="transition-colors hover:text-emerald-400">Privacy Policy</a>
+          <a href="/terms" className="transition-colors hover:text-emerald-400">Terms of Service</a>
         </div>
       </div>
     </div>

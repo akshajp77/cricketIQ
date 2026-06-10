@@ -44,18 +44,18 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Cricket field background */}
-      <div className="absolute inset-0 bg-[#0A0F1E]">
-        <div className="absolute inset-0 bg-gradient-radial from-[#00D4AA]/10 via-transparent to-transparent" style={{ background: "radial-gradient(ellipse at 20% 50%, rgba(0,212,170,0.08) 0%, transparent 60%)" }} />
+      <div className="absolute inset-0 bg-[#07090D]">
+        <div className="absolute inset-0 bg-gradient-radial from-[#10B981]/10 via-transparent to-transparent" style={{ background: "radial-gradient(ellipse at 20% 50%, rgba(16,185,129,0.08) 0%, transparent 60%)" }} />
         <div className="absolute inset-0 bg-gradient-radial" style={{ background: "radial-gradient(ellipse at 80% 20%, rgba(245,158,11,0.06) 0%, transparent 60%)" }} />
         {/* Grid pattern */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "linear-gradient(#00D4AA 1px, transparent 1px), linear-gradient(90deg, #00D4AA 1px, transparent 1px)", backgroundSize: "64px 64px" }} />
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "linear-gradient(#10B981 1px, transparent 1px), linear-gradient(90deg, #10B981 1px, transparent 1px)", backgroundSize: "64px 64px" }} />
       </div>
 
       <div className="relative z-10 w-full max-w-md px-6">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#00D4AA] to-[#0093A8] mb-4 shadow-lg shadow-[#00D4AA]/30">
-            <Trophy className="w-7 h-7 text-[#0A0F1E]" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#10B981] to-[#059669] mb-4 shadow-lg shadow-[#10B981]/30">
+            <Trophy className="w-7 h-7 text-[#07090D]" />
           </div>
           <h1 className="text-3xl font-bold text-white">CricketIQ</h1>
           <p className="text-[#6B7280] mt-1">AI Cricket Analytics Platform</p>
@@ -100,17 +100,17 @@ export default function SignInPage() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full bg-[#00D4AA] text-[#0A0F1E] hover:bg-[#00D4AA]/90 font-semibold" disabled={loading}>
+            <Button type="submit" className="w-full bg-[#10B981] text-[#07090D] hover:bg-[#10B981]/90 font-semibold" disabled={loading}>
               {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#1F2937]" />
+              <div className="w-full border-t border-[#1B212C]" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[#111827] px-2 text-[#6B7280]">Or continue with</span>
+              <span className="bg-[#0C1015] px-2 text-[#6B7280]">Or continue with</span>
             </div>
           </div>
 
@@ -126,7 +126,7 @@ export default function SignInPage() {
 
           <p className="text-center text-sm text-[#6B7280] mt-6">
             Don&apos;t have an account?{" "}
-            <Link href="/auth/signup" className="text-[#00D4AA] hover:underline font-medium">
+            <Link href="/auth/signup" className="text-[#10B981] hover:underline font-medium">
               Sign up
             </Link>
           </p>

@@ -47,15 +47,15 @@ export default function SignUpPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      <div className="absolute inset-0 bg-[#0A0F1E]">
-        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 80% 50%, rgba(0,212,170,0.08) 0%, transparent 60%)" }} />
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "linear-gradient(#00D4AA 1px, transparent 1px), linear-gradient(90deg, #00D4AA 1px, transparent 1px)", backgroundSize: "64px 64px" }} />
+      <div className="absolute inset-0 bg-[#07090D]">
+        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 80% 50%, rgba(16,185,129,0.08) 0%, transparent 60%)" }} />
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "linear-gradient(#10B981 1px, transparent 1px), linear-gradient(90deg, #10B981 1px, transparent 1px)", backgroundSize: "64px 64px" }} />
       </div>
 
       <div className="relative z-10 w-full max-w-md px-6">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#00D4AA] to-[#0093A8] mb-4 shadow-lg shadow-[#00D4AA]/30">
-            <Trophy className="w-7 h-7 text-[#0A0F1E]" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#10B981] to-[#059669] mb-4 shadow-lg shadow-[#10B981]/30">
+            <Trophy className="w-7 h-7 text-[#07090D]" />
           </div>
           <h1 className="text-3xl font-bold text-white">CricketIQ</h1>
           <p className="text-[#6B7280] mt-1">Start tracking your performance today</p>
@@ -110,14 +110,14 @@ export default function SignUpPage() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full bg-[#00D4AA] text-[#0A0F1E] hover:bg-[#00D4AA]/90 font-semibold" disabled={loading}>
+            <Button type="submit" className="w-full bg-[#10B981] text-[#07090D] hover:bg-[#10B981]/90 font-semibold" disabled={loading}>
               {loading ? "Creating account..." : "Create Account"}
             </Button>
           </form>
 
           <p className="text-center text-sm text-[#6B7280] mt-6">
             Already have an account?{" "}
-            <Link href="/auth/signin" className="text-[#00D4AA] hover:underline font-medium">
+            <Link href="/auth/signin" className="text-[#10B981] hover:underline font-medium">
               Sign in
             </Link>
           </p>
