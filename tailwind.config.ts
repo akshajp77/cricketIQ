@@ -44,14 +44,30 @@ const config: Config = {
           DEFAULT: "#0C1015",
           foreground: "#F9FAFB",
         },
-        surface: "#0C1015",
+        surface: {
+          DEFAULT: "#0C1015",
+          2: "#11161D",
+        },
+        hairline: {
+          DEFAULT: "#1B212C",
+          subtle: "#161B24",
+          strong: "#2A3240",
+        },
+        ink: {
+          DEFAULT: "#F9FAFB",
+          secondary: "#8A93A3",
+          muted: "#6B7484",
+          faint: "#5A6372",
+        },
         navy: "#07090D",
         teal: "#10B981",
         amber: "#F59E0B",
+        sky: "#38BDF8",
+        violet: "#A78BFA",
       },
       fontFamily: {
-        sans: ["Inter", ...fontFamily.sans],
-        mono: ["Geist Mono", ...fontFamily.mono],
+        sans: ["var(--font-geist-sans)", ...fontFamily.sans],
+        mono: ["var(--font-geist-mono)", ...fontFamily.mono],
       },
       borderRadius: {
         lg: "0.5rem",

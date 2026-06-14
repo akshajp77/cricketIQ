@@ -226,7 +226,7 @@ export default function AICoachPage() {
       if (!res.ok) {
         toast.error(data.error ?? "Analysis failed");
         // Refresh usage state on 429 so UI reflects the limit immediately
-        if (res.status === 429) setUsage({ remaining: 0, limit: 1 });
+        if (res.status === 429) setUsage({ remaining: 0, limit: 3 });
         return;
       }
       const { remaining, limit, ...analysis } = data as AIAnalysis & Usage;

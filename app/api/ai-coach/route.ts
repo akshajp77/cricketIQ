@@ -81,7 +81,7 @@ export async function POST() {
   }
 
   // Rate limit: 1 AI analysis per user per week
-  const rateCheck = await checkRateLimit(session.user.id, 1);
+  const rateCheck = await checkRateLimit(session.user.id, 3);
   if (!rateCheck.allowed) {
     return NextResponse.json(
       {
@@ -212,7 +212,7 @@ export async function GET() {
       where: { userId: session.user.id },
       orderBy: { createdAt: "desc" },
     }),
-    peekRateLimit(session.user.id, 1),
+    peekRateLimit(session.user.id, 3),
   ]);
 
   return NextResponse.json({ analyses, usage });

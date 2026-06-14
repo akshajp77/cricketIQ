@@ -13,6 +13,15 @@ export function useCountUp(end: number, duration = 1500, decimals = 0) {
       return;
     }
 
+    // Honor reduced-motion: skip the animation and show the final value.
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+    ) {
+      setCount(end);
+      return;
+    }
+
     const step = (timestamp: number) => {
       if (!startRef.current) startRef.current = timestamp;
       const progress = Math.min((timestamp - startRef.current) / duration, 1);
