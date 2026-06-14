@@ -30,7 +30,7 @@ export function PageHeader({
         )}
         <h1 className="text-2xl font-bold tracking-tight text-white">{title}</h1>
         {description && (
-          <div className="mt-1 text-sm text-[#8A93A3]">{description}</div>
+          <div className="mt-1 text-sm text-ink-secondary">{description}</div>
         )}
       </div>
       {actions && <div className="flex shrink-0 items-center gap-3">{actions}</div>}

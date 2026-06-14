@@ -128,8 +128,8 @@ export default async function DashboardPage() {
       {/* Rating + stat grid */}
       <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-4">
         {/* CricketIQ Rating */}
-        <div className="rounded-xl border border-[#1B212C] bg-[#0C1015] p-5 lg:col-span-1">
-          <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6B7484]">
+        <div className="rounded-xl border border-hairline bg-surface p-5 lg:col-span-1">
+          <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-muted">
             CricketIQ Rating
           </p>
           <RatingGauge breakdown={rating} />
@@ -209,8 +209,8 @@ export default async function DashboardPage() {
       </div>
 
       {/* Recent Matches */}
-      <div className="overflow-hidden rounded-xl border border-[#1B212C] bg-[#0C1015]">
-        <div className="flex items-center justify-between border-b border-[#161B24] px-5 py-4">
+      <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
+        <div className="flex items-center justify-between border-b border-hairline-subtle px-5 py-4">
           <h3 className="text-sm font-semibold text-white">Recent Matches</h3>
           <Link
             href="/matches"
@@ -220,7 +220,7 @@ export default async function DashboardPage() {
             <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
-        <div className="divide-y divide-[#161B24]">
+        <div className="divide-y divide-hairline-subtle">
           {recentMatches.map((match: FullMatch) => (
             <Link
               key={match.id}
@@ -235,11 +235,11 @@ export default async function DashboardPage() {
                   <p className="truncate text-sm font-medium text-white">
                     vs {match.opponent}
                   </p>
-                  <span className="flex-shrink-0 rounded border border-[#1B212C] bg-white/[0.02] px-1.5 py-px text-[10px] font-medium text-[#6B7484]">
+                  <span className="flex-shrink-0 rounded border border-hairline bg-white/[0.02] px-1.5 py-px text-[10px] font-medium text-ink-muted">
                     {match.format}
                   </span>
                 </div>
-                <p className="mt-0.5 text-xs text-[#6B7484]">
+                <p className="mt-0.5 text-xs text-ink-muted">
                   {formatDate(match.date)}
                   {match.venue ? ` · ${match.venue}` : ""}
                 </p>
@@ -248,11 +248,11 @@ export default async function DashboardPage() {
                 <div className="text-right">
                   <p className="stat-mono text-sm font-bold tabular-nums text-white">
                     {match.batting?.runs ?? 0}
-                    <span className="text-[#5A6372]">
+                    <span className="text-ink-faint">
                       ({match.batting?.balls ?? 0})
                     </span>
                   </p>
-                  <p className="text-[10px] uppercase tracking-wider text-[#5A6372]">
+                  <p className="text-[10px] uppercase tracking-wider text-ink-faint">
                     Bat
                   </p>
                 </div>
@@ -260,7 +260,7 @@ export default async function DashboardPage() {
                   <p className="stat-mono text-sm font-bold tabular-nums text-white">
                     {match.bowling?.wickets ?? 0}/{match.bowling?.runsConceded ?? 0}
                   </p>
-                  <p className="text-[10px] uppercase tracking-wider text-[#5A6372]">
+                  <p className="text-[10px] uppercase tracking-wider text-ink-faint">
                     Bowl
                   </p>
                 </div>

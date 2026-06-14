@@ -2,6 +2,7 @@
 
 import { useCountUp } from "@/hooks/useCountUp";
 import { cn } from "@/lib/utils";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import type { ReactNode } from "react";
 
 interface StatCardProps {
@@ -52,9 +53,15 @@ export function StatCard({
   subStats,
 }: StatCardProps) {
   const animated = useCountUp(value, 1500, decimals);
+  const TrendIcon =
+    trend?.direction === "up"
+      ? TrendingUp
+      : trend?.direction === "down"
+        ? TrendingDown
+        : Minus;
 
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-[#1B212C] bg-[#0C1015] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#2A3240] hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)]">
+    <div className="group relative flex flex-col overflow-hidden rounded-xl border border-hairline bg-surface p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-hairline-strong hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)]">
       <div
         className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-0 transition-opacity duration-500 group-hover:opacity-100"
         style={{ background: `radial-gradient(circle, ${iconColor}14 0%, transparent 70%)` }}
@@ -62,10 +69,10 @@ export function StatCard({
 
       <div className="mb-3 flex items-start justify-between">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6B7484]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-muted">
             {title}
           </p>
-          <p className="stat-mono mt-1.5 text-2xl font-bold tabular-nums text-white">
+          <p className="stat-mono mt-1.5 text-[26px] font-bold leading-none tabular-nums text-white">
             {prefix}
             {decimals > 0 ? animated.toFixed(decimals) : Math.round(animated)}
             {suffix}
@@ -85,17 +92,17 @@ export function StatCard({
         </div>
       )}
 
-      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+      <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-3">
         {subStats?.map((s) => (
           <div key={s.label} className="flex items-baseline gap-1">
-            <span className="text-[11px] text-[#6B7484]">{s.label}</span>
+            <span className="text-[11px] text-ink-muted">{s.label}</span>
             <span className="stat-mono text-xs font-semibold text-[#D7DCE4]">{s.value}</span>
           </div>
         ))}
         {trend && (
           <span
             className={cn(
-              "ml-auto inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium",
+              "ml-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium",
               {
                 "bg-emerald-500/10 text-emerald-400": trend.direction === "up",
                 "bg-red-500/10 text-red-400": trend.direction === "down",
@@ -103,6 +110,7 @@ export function StatCard({
               }
             )}
           >
+            <TrendIcon className="h-3 w-3" />
             {trend.label}
           </span>
         )}

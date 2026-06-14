@@ -57,7 +57,7 @@ export function RatingGauge({ breakdown }: RatingGaugeProps) {
           <span className="stat-mono text-[34px] font-bold leading-none tabular-nums" style={{ color }}>
             {animatedTotal.toFixed(1)}
           </span>
-          <span className="mt-1.5 rounded-full border border-[#1B212C] bg-white/[0.03] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#8A93A3]">
+          <span className="mt-1.5 rounded-full border border-hairline bg-white/[0.03] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-ink-secondary">
             {label}
           </span>
         </div>
@@ -70,10 +70,10 @@ export function RatingGauge({ breakdown }: RatingGaugeProps) {
           return (
             <div key={item.label}>
               <div className="mb-1 flex items-baseline justify-between text-xs">
-                <span className="text-[#8A93A3]">{item.label}</span>
+                <span className="text-ink-secondary">{item.label}</span>
                 <span className="font-mono tabular-nums text-[#D7DCE4]">
                   {value.toFixed(1)}
-                  <span className="text-[#5A6372]"> / {item.max}</span>
+                  <span className="text-ink-faint"> / {item.max}</span>
                 </span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.05]">
