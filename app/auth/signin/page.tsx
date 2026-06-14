@@ -44,7 +44,7 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Cricket field background */}
-      <div className="absolute inset-0 bg-[#07090D]">
+      <div className="absolute inset-0 bg-navy">
         <div className="absolute inset-0 bg-gradient-radial from-[#10B981]/10 via-transparent to-transparent" style={{ background: "radial-gradient(ellipse at 20% 50%, rgba(16,185,129,0.08) 0%, transparent 60%)" }} />
         <div className="absolute inset-0 bg-gradient-radial" style={{ background: "radial-gradient(ellipse at 80% 20%, rgba(245,158,11,0.06) 0%, transparent 60%)" }} />
         {/* Grid pattern */}
@@ -55,10 +55,10 @@ export default function SignInPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#10B981] to-[#059669] mb-4 shadow-lg shadow-[#10B981]/30">
-            <Trophy className="w-7 h-7 text-[#07090D]" />
+            <Trophy className="w-7 h-7 text-black" />
           </div>
           <h1 className="text-3xl font-bold text-white">CricketIQ</h1>
-          <p className="text-[#6B7280] mt-1">AI Cricket Analytics Platform</p>
+          <p className="text-ink-muted mt-1">AI Cricket Analytics Platform</p>
         </div>
 
         <div className="glass rounded-2xl p-8">
@@ -93,24 +93,32 @@ export default function SignInPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-white transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-1 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-ink-muted transition-colors hover:text-white"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            <Button type="submit" className="w-full bg-[#10B981] text-[#07090D] hover:bg-[#10B981]/90 font-semibold" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In"}
+            <Button type="submit" className="w-full bg-emerald-500 font-semibold text-black shadow-lg shadow-emerald-500/20 hover:bg-emerald-400" disabled={loading}>
+              {loading ? (
+                <>
+                  <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-black/30 border-t-black" />
+                  Signing in…
+                </>
+              ) : (
+                "Sign In"
+              )}
             </Button>
           </form>
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#1B212C]" />
+              <div className="w-full border-t border-hairline" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[#0C1015] px-2 text-[#6B7280]">Or continue with</span>
+              <span className="bg-surface px-2 text-ink-muted">Or continue with</span>
             </div>
           </div>
 
@@ -124,9 +132,9 @@ export default function SignInPage() {
             Continue with Google
           </Button>
 
-          <p className="text-center text-sm text-[#6B7280] mt-6">
+          <p className="text-center text-sm text-ink-muted mt-6">
             Don&apos;t have an account?{" "}
-            <Link href="/auth/signup" className="text-[#10B981] hover:underline font-medium">
+            <Link href="/auth/signup" className="font-medium text-emerald-400 hover:underline">
               Sign up
             </Link>
           </p>

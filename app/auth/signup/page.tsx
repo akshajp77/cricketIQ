@@ -16,11 +16,16 @@ export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [pwTouched, setPwTouched] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const pwValid = password.length >= 8;
+  const pwError = pwTouched && !pwValid;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 8) {
+    if (!pwValid) {
+      setPwTouched(true);
       toast.error("Password must be at least 8 characters");
       return;
     }
@@ -47,7 +52,7 @@ export default function SignUpPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      <div className="absolute inset-0 bg-[#07090D]">
+      <div className="absolute inset-0 bg-navy">
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 80% 50%, rgba(16,185,129,0.08) 0%, transparent 60%)" }} />
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "linear-gradient(#10B981 1px, transparent 1px), linear-gradient(90deg, #10B981 1px, transparent 1px)", backgroundSize: "64px 64px" }} />
       </div>
@@ -55,10 +60,10 @@ export default function SignUpPage() {
       <div className="relative z-10 w-full max-w-md px-6">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#10B981] to-[#059669] mb-4 shadow-lg shadow-[#10B981]/30">
-            <Trophy className="w-7 h-7 text-[#07090D]" />
+            <Trophy className="w-7 h-7 text-black" />
           </div>
           <h1 className="text-3xl font-bold text-white">CricketIQ</h1>
-          <p className="text-[#6B7280] mt-1">Start tracking your performance today</p>
+          <p className="text-ink-muted mt-1">Start tracking your performance today</p>
         </div>
 
         <div className="glass rounded-2xl p-8">
@@ -73,6 +78,7 @@ export default function SignUpPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                autoComplete="name"
               />
             </div>
 
@@ -85,6 +91,7 @@ export default function SignUpPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
               />
             </div>
 
@@ -97,27 +104,48 @@ export default function SignUpPage() {
                   placeholder="Min. 8 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onBlur={() => setPwTouched(true)}
                   required
                   minLength={8}
+                  autoComplete="new-password"
+                  aria-invalid={pwError}
+                  aria-describedby="password-hint"
+                  className={pwError ? "border-red-500/60 focus-visible:ring-red-500/40" : undefined}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-white transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-1 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-ink-muted transition-colors hover:text-white"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              <p
+                id="password-hint"
+                className={pwError ? "text-xs text-red-400" : "text-xs text-ink-muted"}
+              >
+                {pwError
+                  ? "Password must be at least 8 characters"
+                  : "Use at least 8 characters"}
+              </p>
             </div>
 
-            <Button type="submit" className="w-full bg-[#10B981] text-[#07090D] hover:bg-[#10B981]/90 font-semibold" disabled={loading}>
-              {loading ? "Creating account..." : "Create Account"}
+            <Button type="submit" className="w-full bg-emerald-500 font-semibold text-black shadow-lg shadow-emerald-500/20 hover:bg-emerald-400" disabled={loading}>
+              {loading ? (
+                <>
+                  <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-black/30 border-t-black" />
+                  Creating account…
+                </>
+              ) : (
+                "Create Account"
+              )}
             </Button>
           </form>
 
-          <p className="text-center text-sm text-[#6B7280] mt-6">
+          <p className="text-center text-sm text-ink-muted mt-6">
             Already have an account?{" "}
-            <Link href="/auth/signin" className="text-[#10B981] hover:underline font-medium">
+            <Link href="/auth/signin" className="font-medium text-emerald-400 hover:underline">
               Sign in
             </Link>
           </p>
