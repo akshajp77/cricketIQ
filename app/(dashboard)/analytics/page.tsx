@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
+import { AlertCircle, RefreshCw, BarChart3, Plus } from "lucide-react";
 import {
   AreaChart, Area,
   LineChart, Line,
@@ -13,6 +15,8 @@ import {
 } from "recharts";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 
 type FilterKey = "5" | "10" | "20" | "all";
@@ -72,12 +76,12 @@ function ChartCard({
 }) {
   return (
     <div
-      className={`rounded-xl border border-[#1B212C] bg-[#0C1015] p-5 transition-colors hover:border-[#222936] ${className ?? ""}`}
+      className={`rounded-xl border border-hairline bg-surface p-5 transition-colors hover:border-hairline-strong ${className ?? ""}`}
     >
       <div className="mb-4 flex items-baseline justify-between gap-3">
         <p className="text-sm font-semibold text-white">{title}</p>
         {meta && (
-          <p className="font-mono text-[10px] uppercase tracking-wider text-[#5A6372]">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-ink-faint">
             {meta}
           </p>
         )}
@@ -100,15 +104,40 @@ function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
 
 function LoadingGrid() {
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-xl border border-[#1B212C] bg-[#0C1015] p-5">
-            <Skeleton className="mb-4 h-4 w-40" />
-            <Skeleton className="h-[200px] w-full" />
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="rounded-xl border border-hairline bg-surface p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-3 w-16" />
           </div>
-        ))}
+          <Skeleton className="h-[200px] w-full" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ErrorState({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center rounded-xl border border-hairline bg-surface px-6 py-16 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10">
+        <AlertCircle className="h-6 w-6 text-red-400" />
       </div>
+      <h3 className="mt-5 text-lg font-semibold text-white">
+        Couldn&apos;t load analytics
+      </h3>
+      <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-ink-secondary">
+        Something went wrong fetching your performance data. Check your connection
+        and try again.
+      </p>
+      <Button
+        onClick={onRetry}
+        className="mt-6 border border-hairline-strong bg-surface-2 text-white hover:bg-white/[0.06]"
+      >
+        <RefreshCw className="mr-2 h-4 w-4" />
+        Retry
+      </Button>
     </div>
   );
 }
@@ -117,23 +146,27 @@ export default function AnalyticsPage() {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const res = await fetch(`/api/analytics?last=${filter}`);
+      if (!res.ok) throw new Error("Failed to load analytics");
+      const json = await res.json();
+      setData(json);
+    } catch {
+      setError(true);
+      toast.error("Failed to load analytics");
+    } finally {
+      setLoading(false);
+    }
+  }, [filter]);
 
   useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/analytics?last=${filter}`);
-        if (!res.ok) throw new Error("Failed to load analytics");
-        const json = await res.json();
-        setData(json);
-      } catch {
-        toast.error("Failed to load analytics");
-      } finally {
-        setLoading(false);
-      }
-    }
     load();
-  }, [filter]);
+  }, [load]);
 
   const rangeLabel =
     filter === "all" ? "All time" : `Last ${filter} matches`;
@@ -166,8 +199,27 @@ export default function AnalyticsPage() {
         }
       />
 
-      {loading || !data ? (
+      {loading ? (
         <LoadingGrid />
+      ) : error ? (
+        <ErrorState onRetry={load} />
+      ) : !data || data.heatmap.length === 0 ? (
+        <EmptyState
+          icon={BarChart3}
+          title="No analytics yet"
+          description="Log a few matches and your performance trends, breakdowns, and rating history will appear here."
+          action={
+            <Button
+              asChild
+              className="bg-emerald-500 font-semibold text-black shadow-lg shadow-emerald-500/20 hover:bg-emerald-400"
+            >
+              <Link href="/matches/new">
+                <Plus className="mr-2 h-4 w-4" />
+                Add a Match
+              </Link>
+            </Button>
+          }
+        />
       ) : (
         <>
           {/* Chart grid */}
@@ -183,7 +235,7 @@ export default function AnalyticsPage() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
-                  <XAxis dataKey="date" tick={axisTick} tickLine={false} axisLine={false} />
+                  <XAxis dataKey="date" tick={axisTick} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={24} />
                   <YAxis tick={axisTick} tickLine={false} axisLine={false} width={32} />
                   <Tooltip contentStyle={tooltipContentStyle} formatter={(v) => [v as number, "Runs"]} />
                   <Area type="monotone" dataKey="runs" stroke={C.batting} strokeWidth={2} fill="url(#runsGrad)" dot={{ fill: C.batting, r: 2.5, strokeWidth: 0 }} activeDot={{ r: 4 }} />
@@ -196,7 +248,7 @@ export default function AnalyticsPage() {
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={data.charts.avg}>
                   <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
-                  <XAxis dataKey="date" tick={axisTick} tickLine={false} axisLine={false} />
+                  <XAxis dataKey="date" tick={axisTick} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={24} />
                   <YAxis tick={axisTick} tickLine={false} axisLine={false} width={32} />
                   <Tooltip contentStyle={tooltipContentStyle} formatter={(v) => [(v as number).toFixed(2), "Average"]} />
                   <ReferenceLine y={data.careerAvg} stroke={C.bowling} strokeDasharray="4 4" label={{ value: "Career", fill: C.bowling, fontSize: 10 }} />
@@ -210,7 +262,7 @@ export default function AnalyticsPage() {
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={data.charts.sr}>
                   <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
-                  <XAxis dataKey="date" tick={axisTick} tickLine={false} axisLine={false} />
+                  <XAxis dataKey="date" tick={axisTick} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={24} />
                   <YAxis tick={axisTick} tickLine={false} axisLine={false} width={32} />
                   <Tooltip contentStyle={tooltipContentStyle} formatter={(v) => [(v as number).toFixed(1), "Strike Rate"]} />
                   <ReferenceLine y={100} stroke={C.axis} strokeDasharray="3 3" />
@@ -224,7 +276,7 @@ export default function AnalyticsPage() {
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={data.charts.wickets}>
                   <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
-                  <XAxis dataKey="date" tick={axisTick} tickLine={false} axisLine={false} />
+                  <XAxis dataKey="date" tick={axisTick} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={24} />
                   <YAxis tick={axisTick} tickLine={false} axisLine={false} allowDecimals={false} width={32} />
                   <Tooltip contentStyle={tooltipContentStyle} cursor={{ fill: "rgba(255,255,255,0.03)" }} formatter={(v) => [v as number, "Wickets"]} />
                   <Bar dataKey="wickets" fill={C.bowling} opacity={0.85} radius={[3, 3, 0, 0]} maxBarSize={28} />
@@ -237,7 +289,7 @@ export default function AnalyticsPage() {
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={data.charts.economy}>
                   <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
-                  <XAxis dataKey="date" tick={axisTick} tickLine={false} axisLine={false} />
+                  <XAxis dataKey="date" tick={axisTick} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={24} />
                   <YAxis tick={axisTick} tickLine={false} axisLine={false} width={32} />
                   <Tooltip contentStyle={tooltipContentStyle} formatter={(v) => [(v as number).toFixed(2), "Economy"]} />
                   <ReferenceLine y={7} stroke={C.batting} strokeDasharray="4 4" label={{ value: "Good (7.0)", fill: C.batting, fontSize: 10 }} />
@@ -251,7 +303,7 @@ export default function AnalyticsPage() {
               <ResponsiveContainer width="100%" height={200}>
                 <ComposedChart data={data.charts.allRound}>
                   <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
-                  <XAxis dataKey="date" tick={axisTick} tickLine={false} axisLine={false} />
+                  <XAxis dataKey="date" tick={axisTick} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={24} />
                   <YAxis yAxisId="left" tick={axisTick} tickLine={false} axisLine={false} width={32} />
                   <YAxis yAxisId="right" orientation="right" tick={axisTick} tickLine={false} axisLine={false} width={28} />
                   <Tooltip contentStyle={tooltipContentStyle} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
@@ -365,7 +417,7 @@ export default function AnalyticsPage() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke={C.grid} vertical={false} />
-                  <XAxis dataKey="date" tick={axisTick} tickLine={false} axisLine={false} />
+                  <XAxis dataKey="date" tick={axisTick} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={24} />
                   <YAxis domain={[0, 100]} tick={axisTick} tickLine={false} axisLine={false} width={32} />
                   <Tooltip
                     contentStyle={tooltipContentStyle}
