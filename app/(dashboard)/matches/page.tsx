@@ -49,7 +49,7 @@ function StatBlock({ title, accent, rows }: {
       <div className="space-y-1.5 text-sm">
         {rows.map((r) => (
           <div key={r.label} className="flex justify-between gap-3">
-            <span className="text-[#6B7484]">{r.label}</span>
+            <span className="text-ink-muted">{r.label}</span>
             <span className={cn("stat-mono tabular-nums", r.highlight ? "font-semibold" : "text-white")}
               style={r.highlight ? { color: accent } : undefined}>
               {r.value}
@@ -70,7 +70,7 @@ function ExpandedRow({ match }: { match: Match }) {
     : "—";
 
   return (
-    <div className="grid grid-cols-1 gap-5 border-t border-[#161B24] bg-[#07090D]/60 px-5 py-4 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-5 border-t border-hairline-subtle bg-navy/60 px-5 py-4 sm:grid-cols-3">
       <StatBlock
         title="Batting"
         accent="#10B981"
@@ -184,7 +184,7 @@ export default function MatchesPage() {
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <div className="relative min-w-[200px] flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#5A6372]" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
           <Input
             placeholder="Search opponent..."
             className="pl-9"
@@ -194,7 +194,7 @@ export default function MatchesPage() {
         </div>
         <Select value={format} onValueChange={(v) => { setFormat(v); setPage(1); }}>
           <SelectTrigger className="w-36">
-            <Filter className="mr-2 h-4 w-4 text-[#5A6372]" />
+            <Filter className="mr-2 h-4 w-4 text-ink-faint" />
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -209,7 +209,7 @@ export default function MatchesPage() {
 
       {/* List */}
       {loading ? (
-        <div className="divide-y divide-[#161B24] overflow-hidden rounded-xl border border-[#1B212C] bg-[#0C1015]">
+        <div className="divide-y divide-hairline-subtle overflow-hidden rounded-xl border border-hairline bg-surface">
           {Array.from({ length: 6 }).map((_, i) => (
             <RowSkeleton key={i} />
           ))}
@@ -238,9 +238,9 @@ export default function MatchesPage() {
           }
         />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-[#1B212C] bg-[#0C1015]">
+        <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
           {/* Column header (desktop) */}
-          <div className="hidden grid-cols-[1fr_90px_90px_90px_64px] items-center gap-4 border-b border-[#161B24] px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#5A6372] sm:grid">
+          <div className="hidden grid-cols-[1fr_90px_90px_90px_64px] items-center gap-4 border-b border-hairline-subtle px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-faint sm:grid">
             <span>Match</span>
             <span className="text-right">Batting</span>
             <span className="text-right">Bowling</span>
@@ -248,7 +248,7 @@ export default function MatchesPage() {
             <span />
           </div>
 
-          <div className="divide-y divide-[#161B24]">
+          <div className="divide-y divide-hairline-subtle">
             {matches.map((match) => (
               <div key={match.id} className="group">
                 <div
@@ -258,11 +258,11 @@ export default function MatchesPage() {
                   <div className="min-w-0 flex-1 sm:flex-none">
                     <div className="flex items-center gap-2">
                       <span className="truncate text-sm font-medium text-white">vs {match.opponent}</span>
-                      <span className="flex-shrink-0 rounded border border-[#1B212C] bg-white/[0.02] px-1.5 py-px text-[10px] font-medium text-[#6B7484]">
+                      <span className="flex-shrink-0 rounded border border-hairline bg-white/[0.02] px-1.5 py-px text-[10px] font-medium text-ink-muted">
                         {match.format}
                       </span>
                     </div>
-                    <p className="mt-0.5 text-xs text-[#6B7484]">
+                    <p className="mt-0.5 text-xs text-ink-muted">
                       {formatDate(match.date)}{match.venue ? ` · ${match.venue}` : ""}
                     </p>
                   </div>
@@ -270,7 +270,7 @@ export default function MatchesPage() {
                     <span className="stat-mono text-sm font-semibold tabular-nums text-white">
                       {match.batting?.runs ?? 0}
                     </span>
-                    <span className="text-xs text-[#5A6372]">({match.batting?.balls ?? 0})</span>
+                    <span className="text-xs text-ink-faint">({match.batting?.balls ?? 0})</span>
                   </div>
                   <div className="text-right">
                     <span className="stat-mono text-sm font-semibold tabular-nums text-white">
@@ -284,13 +284,14 @@ export default function MatchesPage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); setDeleteId(match.id); }}
                       title="Delete match"
-                      className="rounded-md p-1.5 text-[#5A6372] transition-all hover:bg-red-500/10 hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100"
+                      aria-label={`Delete match vs ${match.opponent}`}
+                      className="flex h-9 w-9 items-center justify-center rounded-md text-ink-faint transition-all hover:bg-red-500/10 hover:text-red-400 sm:h-8 sm:w-8 sm:opacity-0 sm:group-hover:opacity-100"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                     {expandedId === match.id
-                      ? <ChevronUp className="h-4 w-4 text-[#5A6372]" />
-                      : <ChevronDown className="h-4 w-4 text-[#5A6372]" />}
+                      ? <ChevronUp className="h-4 w-4 text-ink-faint" />
+                      : <ChevronDown className="h-4 w-4 text-ink-faint" />}
                   </div>
                 </div>
                 {expandedId === match.id && <ExpandedRow match={match} />}
@@ -306,7 +307,7 @@ export default function MatchesPage() {
           <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
             Prev
           </Button>
-          <span className="font-mono text-xs tabular-nums text-[#6B7484]">
+          <span className="font-mono text-xs tabular-nums text-ink-muted">
             {page} / {totalPages}
           </span>
           <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>

@@ -23,7 +23,7 @@ function DisciplineCard({
   rows: Array<{ label: string; value: string | number; highlight?: boolean }>;
 }) {
   return (
-    <div className="rounded-xl border border-[#1B212C] bg-[#0C1015] p-5">
+    <div className="rounded-xl border border-hairline bg-surface p-5">
       <div className="mb-4 flex items-center gap-2">
         <div
           className="flex h-7 w-7 items-center justify-center rounded-lg"
@@ -31,16 +31,16 @@ function DisciplineCard({
         >
           <Icon className="h-3.5 w-3.5" style={{ color: accent }} />
         </div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6B7484]">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-muted">
           {title}
         </p>
       </div>
       <p className="stat-mono text-3xl font-bold tabular-nums text-white">{headline}</p>
-      <p className="mt-0.5 text-sm text-[#6B7484]">{sub}</p>
-      <div className="mt-4 space-y-2 border-t border-[#161B24] pt-4 text-sm">
+      <p className="mt-0.5 text-sm text-ink-muted">{sub}</p>
+      <div className="mt-4 space-y-2 border-t border-hairline-subtle pt-4 text-sm">
         {rows.map((r) => (
           <div key={r.label} className="flex justify-between">
-            <span className="text-[#6B7484]">{r.label}</span>
+            <span className="text-ink-muted">{r.label}</span>
             <span
               className="stat-mono tabular-nums"
               style={r.highlight ? { color: accent, fontWeight: 600 } : { color: "#fff" }}
@@ -76,7 +76,7 @@ export default async function MatchDetailPage({ params }: { params: { id: string
     <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       {/* Header */}
       <div>
-        <Button asChild variant="ghost" size="sm" className="-ml-2 mb-3 text-[#8A93A3] hover:text-white">
+        <Button asChild variant="ghost" size="sm" className="-ml-2 mb-3 text-ink-secondary hover:text-white">
           <Link href="/matches">
             <ChevronLeft className="mr-1 h-4 w-4" />
             Match History
@@ -87,7 +87,7 @@ export default async function MatchDetailPage({ params }: { params: { id: string
             <h1 className="text-2xl font-bold tracking-tight text-white">
               vs {match.opponent}
             </h1>
-            <p className="mt-1 text-sm text-[#8A93A3]">
+            <p className="mt-1 text-sm text-ink-secondary">
               {formatDate(match.date)}
               {match.venue ? ` · ${match.venue}` : ""}
             </p>
@@ -102,8 +102,8 @@ export default async function MatchDetailPage({ params }: { params: { id: string
       </div>
 
       {match.notes && (
-        <div className="rounded-xl border border-[#1B212C] bg-[#0C1015] p-4">
-          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6B7484]">
+        <div className="rounded-xl border border-hairline bg-surface p-4">
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-muted">
             Notes
           </p>
           <p className="text-sm leading-relaxed text-[#D7DCE4]">{match.notes}</p>

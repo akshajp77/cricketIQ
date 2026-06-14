@@ -75,6 +75,14 @@ const STEP_FIELDS: Record<number, (keyof MatchForm)[]> = {
   4: ["catches", "runOuts", "stumpings"],
 };
 
+// Human-readable names for validation messages (avoid raw field keys in toasts)
+const FIELD_LABELS: Partial<Record<keyof MatchForm, string>> = {
+  opponent: "Opponent",
+  date: "Date",
+  format: "Format",
+  result: "Result",
+};
+
 function Field({
   label,
   required,
@@ -102,8 +110,8 @@ function Field({
 
 function LiveStat({ label, value, accent }: { label: string; value: string; accent: string }) {
   return (
-    <div className="flex items-center justify-between rounded-lg border border-[#1B212C] bg-[#07090D] px-4 py-3">
-      <span className="text-xs font-medium uppercase tracking-wider text-[#6B7484]">
+    <div className="flex items-center justify-between rounded-lg border border-hairline bg-navy px-4 py-3">
+      <span className="text-xs font-medium uppercase tracking-wider text-ink-muted">
         {label}
       </span>
       <span className="stat-mono text-sm font-bold tabular-nums" style={{ color: accent }}>
@@ -153,7 +161,8 @@ export default function NewMatchPage() {
       if (!ok) {
         const stepErrors = fields.filter((f) => errors[f]);
         if (stepErrors.length) {
-          toast.error(`Please fill in: ${stepErrors.join(", ")}`);
+          const names = stepErrors.map((f) => FIELD_LABELS[f] ?? f);
+          toast.error(`Please fill in: ${names.join(", ")}`);
           return;
         }
       }
@@ -241,7 +250,7 @@ export default function NewMatchPage() {
                         ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-400 shadow-[0_0_16px_rgba(16,185,129,0.25)]"
                         : isDone
                         ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-                        : "border-[#1B212C] bg-[#0C1015] text-[#5A6372]"
+                        : "border-hairline bg-surface text-ink-faint"
                     )}
                   >
                     {isDone ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
@@ -249,7 +258,7 @@ export default function NewMatchPage() {
                   <span
                     className={cn(
                       "hidden text-[11px] font-medium sm:block",
-                      isActive ? "text-white" : isDone ? "text-emerald-400/80" : "text-[#5A6372]"
+                      isActive ? "text-white" : isDone ? "text-emerald-400/80" : "text-ink-faint"
                     )}
                   >
                     {s.title}
@@ -276,17 +285,17 @@ export default function NewMatchPage() {
       </div>
 
       <form onSubmit={(e) => e.preventDefault()}>
-        <div className="overflow-hidden rounded-2xl border border-[#1B212C] bg-[#0C1015]">
+        <div className="overflow-hidden rounded-2xl border border-hairline bg-surface">
           {/* Section header */}
-          <div className="flex items-center gap-3 border-b border-[#161B24] px-6 py-4">
+          <div className="flex items-center gap-3 border-b border-hairline-subtle px-6 py-4">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-500/20 bg-emerald-500/10">
               <currentStep.icon className="h-4 w-4 text-emerald-400" />
             </div>
             <div>
               <h2 className="text-[15px] font-semibold text-white">{currentStep.title}</h2>
-              <p className="text-xs text-[#6B7484]">{currentStep.desc}</p>
+              <p className="text-xs text-ink-muted">{currentStep.desc}</p>
             </div>
-            <span className="ml-auto font-mono text-xs text-[#5A6372]">
+            <span className="ml-auto font-mono text-xs text-ink-faint">
               {step}/{STEPS.length}
             </span>
           </div>
@@ -426,7 +435,7 @@ export default function NewMatchPage() {
             {/* Step 5: Review */}
             {step === 5 && (
               <div className="space-y-4">
-                <div className="rounded-xl border border-[#1B212C] bg-[#07090D] p-4">
+                <div className="rounded-xl border border-hairline bg-navy p-4">
                   <ReviewRow label="Match" value={`vs ${values.opponent} · ${values.format} · ${values.result}`} />
                   <ReviewRow label="Date" value={values.date} />
                   {values.venue && <ReviewRow label="Venue" value={values.venue} />}
@@ -455,7 +464,7 @@ export default function NewMatchPage() {
             variant="ghost"
             onClick={() => step > 1 && setStep(step - 1)}
             disabled={step === 1}
-            className="text-[#8A93A3] hover:text-white"
+            className="text-ink-secondary hover:text-white"
           >
             <ChevronLeft className="mr-1 h-4 w-4" />
             Back
@@ -506,7 +515,7 @@ function ReviewSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-[#1B212C] bg-[#07090D] p-4">
+    <div className="rounded-xl border border-hairline bg-navy p-4">
       <p
         className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em]"
         style={{ color: accent }}
@@ -521,7 +530,7 @@ function ReviewSection({
 function ReviewRow({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="flex justify-between py-1">
-      <span className="text-sm text-[#8A93A3]">{label}</span>
+      <span className="text-sm text-ink-secondary">{label}</span>
       <span className="stat-mono text-sm font-medium tabular-nums text-white">{value}</span>
     </div>
   );
