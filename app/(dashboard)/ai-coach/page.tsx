@@ -45,7 +45,7 @@ interface CardProps {
 
 function AnalysisCard({ title, accent, icon: Icon, items, body }: CardProps) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-[#1B212C] bg-[#0C1015] p-5 transition-colors hover:border-[#2A3240]">
+    <div className="flex flex-col gap-3 rounded-xl border border-hairline bg-surface p-5 transition-colors hover:border-hairline-strong">
       <div className="flex items-center gap-2.5">
         <div
           className="flex h-7 w-7 items-center justify-center rounded-lg"
@@ -106,14 +106,14 @@ function AnalyzingState() {
         </span>
         <div>
           <p className="text-sm font-medium text-white">Analyzing your performance…</p>
-          <p className="text-xs text-[#8A93A3]">
+          <p className="text-xs text-ink-secondary">
             The AI coach is reading your full match history. This usually takes a few seconds.
           </p>
         </div>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="space-y-3 rounded-xl border border-[#1B212C] bg-[#0C1015] p-5">
+          <div key={i} className="space-y-3 rounded-xl border border-hairline bg-surface p-5">
             <Skeleton className="h-5 w-28" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-5/6" />
@@ -123,7 +123,7 @@ function AnalyzingState() {
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {Array.from({ length: 2 }).map((_, i) => (
-          <div key={i} className="space-y-3 rounded-xl border border-[#1B212C] bg-[#0C1015] p-5">
+          <div key={i} className="space-y-3 rounded-xl border border-hairline bg-surface p-5">
             <Skeleton className="h-5 w-32" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-full" />
@@ -139,15 +139,15 @@ function AnalyzingState() {
 
 function WeeklyLimitBanner() {
   return (
-    <div className="flex items-start gap-4 rounded-xl border border-[#1B212C] bg-[#0C1015] p-5">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#1B212C] bg-white/[0.03]">
-        <CalendarClock className="h-4 w-4 text-[#6B7484]" />
+    <div className="flex items-start gap-4 rounded-xl border border-hairline bg-surface p-5">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-hairline bg-white/[0.03]">
+        <CalendarClock className="h-4 w-4 text-ink-muted" />
       </div>
       <div>
         <p className="text-sm font-medium text-[#D7DCE4]">
           Weekly analysis used
         </p>
-        <p className="mt-1 text-sm leading-relaxed text-[#6B7484]">
+        <p className="mt-1 text-sm leading-relaxed text-ink-muted">
           You&apos;ve got this week&apos;s coaching session in. Come back next Monday to
           analyze your game again — consistency between sessions is where real
           improvement happens.
@@ -167,26 +167,26 @@ function HistoryItem({ analysis }: { analysis: AIAnalysis }) {
   });
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[#1B212C] bg-[#0C1015]">
+    <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
       <button
         className="flex w-full items-center justify-between px-5 py-4 text-left transition-colors hover:bg-white/[0.02]"
         onClick={() => setOpen(!open)}
       >
         <div className="min-w-0">
           <p className="text-sm font-medium text-white">{date}</p>
-          <p className="mt-0.5 max-w-md truncate text-xs text-[#6B7484]">
+          <p className="mt-0.5 max-w-md truncate text-xs text-ink-muted">
             {analysis.strengths[0] ?? "—"}
           </p>
         </div>
         {open ? (
-          <ChevronUp className="h-4 w-4 shrink-0 text-[#5A6372]" />
+          <ChevronUp className="h-4 w-4 shrink-0 text-ink-faint" />
         ) : (
-          <ChevronDown className="h-4 w-4 shrink-0 text-[#5A6372]" />
+          <ChevronDown className="h-4 w-4 shrink-0 text-ink-faint" />
         )}
       </button>
 
       {open && (
-        <div className="border-t border-[#161B24] bg-[#07090D]/40 p-5">
+        <div className="border-t border-hairline-subtle bg-navy/40 p-5">
           <AnalysisGrid analysis={analysis} />
         </div>
       )}
@@ -247,7 +247,7 @@ export default function AICoachPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
       {/* Hero header */}
-      <div className="relative overflow-hidden rounded-2xl border border-emerald-500/20 bg-[#0C1015] p-6 sm:p-8">
+      <div className="relative overflow-hidden rounded-2xl border border-emerald-500/20 bg-surface p-6 sm:p-8">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,0.10),transparent_55%)]" />
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-4">
@@ -258,7 +258,7 @@ export default function AICoachPage() {
               <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl">
                 AI Coach
               </h1>
-              <p className="mt-1 max-w-md text-sm leading-relaxed text-[#8A93A3]">
+              <p className="mt-1 max-w-md text-sm leading-relaxed text-ink-secondary">
                 Personalised strengths, weaknesses, and a training plan — generated
                 from your complete match history.
               </p>
@@ -267,24 +267,34 @@ export default function AICoachPage() {
 
           {/* CTA — hidden when limit reached */}
           {!limitReached && (
-            <Button
-              onClick={handleAnalyze}
-              disabled={loading}
-              size="lg"
-              className="shrink-0 bg-emerald-500 px-6 font-semibold text-black shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-400 hover:shadow-emerald-400/30"
-            >
-              {loading ? (
-                <>
-                  <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-black/30 border-t-black" />
-                  Analyzing…
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Analyze My Performance
-                </>
+            <div className="flex shrink-0 flex-col gap-1.5 sm:items-end">
+              <Button
+                onClick={handleAnalyze}
+                disabled={loading}
+                size="lg"
+                className="bg-emerald-500 px-6 font-semibold text-black shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-400 hover:shadow-emerald-400/30"
+              >
+                {loading ? (
+                  <>
+                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-black/30 border-t-black" />
+                    Analyzing…
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Analyze My Performance
+                  </>
+                )}
+              </Button>
+              {usage && !loading && (
+                <p className="text-[11px] text-ink-faint">
+                  <span className="stat-mono tabular-nums text-ink-secondary">
+                    {usage.remaining}
+                  </span>{" "}
+                  of {usage.limit} left this week
+                </p>
               )}
-            </Button>
+            </div>
           )}
         </div>
       </div>
@@ -300,7 +310,7 @@ export default function AICoachPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-white">Latest Report</h2>
-            <p className="text-xs text-[#5A6372]">
+            <p className="text-xs text-ink-faint">
               Generated{" "}
               {new Date(current.createdAt).toLocaleString("en-GB", {
                 day: "numeric", month: "short", year: "numeric",
@@ -311,7 +321,7 @@ export default function AICoachPage() {
           <AnalysisGrid analysis={current} />
           {/* Usage indicator below the report */}
           {usage && (
-            <p className="pt-1 text-center text-xs text-[#5A6372]">
+            <p className="pt-1 text-center text-xs text-ink-faint">
               {usage.limit - usage.remaining} of {usage.limit} weekly{" "}
               {usage.limit === 1 ? "analysis" : "analyses"} used
             </p>
