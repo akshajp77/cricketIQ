@@ -17,7 +17,7 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "CricketIQ — AI Cricket Analytics",
   description: "Track, analyze, and improve your cricket performance with AI-powered insights.",
-  icons: { icon: "/favicon.ico" },
+  icons: { icon: "/icon.png" },
 };
 
 export default function RootLayout({
