@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Plus, Search, Trash2, ChevronDown, ChevronUp, Filter, ClipboardList } from "lucide-react";
+import { Plus, Search, Trash2, ChevronDown, ChevronUp, Filter, ClipboardList, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { CSVImportModal } from "@/components/csv-import/CSVImportModal";
 import { formatDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -125,6 +126,7 @@ export default function MatchesPage() {
   const [format, setFormat] = useState("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const fetchMatches = useCallback(async () => {
@@ -169,15 +171,25 @@ export default function MatchesPage() {
         title="Match History"
         description={`${total} ${total === 1 ? "match" : "matches"} recorded`}
         actions={
-          <Button
-            asChild
-            className="bg-emerald-500 font-semibold text-black shadow-lg shadow-emerald-500/20 hover:bg-emerald-400"
-          >
-            <Link href="/matches/new">
-              <Plus className="mr-1.5 h-4 w-4" />
-              New Match
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setImportOpen(true)}
+              className="border-hairline text-ink-muted hover:border-emerald-500/40 hover:text-white"
+            >
+              <Upload className="mr-1.5 h-4 w-4" />
+              Import CSV
+            </Button>
+            <Button
+              asChild
+              className="bg-emerald-500 font-semibold text-black shadow-lg shadow-emerald-500/20 hover:bg-emerald-400"
+            >
+              <Link href="/matches/new">
+                <Plus className="mr-1.5 h-4 w-4" />
+                New Match
+              </Link>
+            </Button>
+          </div>
         }
       />
 
@@ -315,6 +327,13 @@ export default function MatchesPage() {
           </Button>
         </div>
       )}
+
+      {/* CSV import modal */}
+      <CSVImportModal
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onSuccess={fetchMatches}
+      />
 
       {/* Delete dialog */}
       <Dialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>

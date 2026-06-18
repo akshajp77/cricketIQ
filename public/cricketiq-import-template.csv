@@ -1,0 +1,5 @@
+date,opponent,format,runs,wickets,overs,dismissal,notes
+# Instructions: date = YYYY-MM-DD | format = T20/ODI/Test/Casual | dismissal = caught/bowled/lbw/run out/not out/retired (blank = did not bat) | delete this row before importing
+2024-01-15,Local Club,T20,45,0,4.2,caught,Good batting practice session
+2024-01-22,City Sports,ODI,32,2,8.0,bowled,Tricky low pitch conditions
+2024-02-03,School Team,T20,0,1,3.5,,Did not bat this match
