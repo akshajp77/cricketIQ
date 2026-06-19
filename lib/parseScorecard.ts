@@ -162,10 +162,10 @@ interface Section {
 }
 
 const BATTING_END_MARKERS = new Set([
-  "extras", "total", "fall of wickets", "fow", "did not bat", "bowling",
+  "extras", "total", "fall of wickets", "fow", "did not bat", "bowling", "bowler",
 ]);
 const BOWLING_END_MARKERS = new Set([
-  "extras", "total", "fall of wickets", "fow", "batting",
+  "extras", "total", "fall of wickets", "fow", "batting", "batsman", "batman",
 ]);
 
 function isBattingHeaderRow(row: string[]): boolean {
@@ -194,11 +194,24 @@ function parseSections(rows: string[][]): Section[] {
     const nonEmpty = row.map(norm).filter(Boolean);
     const firstCell = nonEmpty[0] ?? "";
 
-    if (firstCell === "batting") {
-      i++;
-      while (i < rows.length && !isBattingHeaderRow(rows[i])) i++;
-      if (i >= rows.length) break;
-      const colIndex = buildColIndex(rows[i]);
+    const isBattingLabel = firstCell === "batting";
+    const isBattingHeader = firstCell === "batsman" || firstCell === "batman";
+    const isBowlingLabel = firstCell === "bowling";
+    const isBowlingHeader = firstCell === "bowler";
+
+    if (isBattingLabel || isBattingHeader) {
+      // If this row is already the column header (e.g. "BatsMan,Runs,..."), use it directly.
+      // If it's just a label row (e.g. "Batting"), advance until we find the header row.
+      let headerRow: string[];
+      if (isBattingHeader) {
+        headerRow = row;
+      } else {
+        i++;
+        while (i < rows.length && !isBattingHeaderRow(rows[i])) i++;
+        if (i >= rows.length) break;
+        headerRow = rows[i];
+      }
+      const colIndex = buildColIndex(headerRow);
       i++;
       const dataRows: string[][] = [];
       while (i < rows.length) {
@@ -212,11 +225,18 @@ function parseSections(rows: string[][]): Section[] {
       continue;
     }
 
-    if (firstCell === "bowling") {
-      i++;
-      while (i < rows.length && !isBowlingHeaderRow(rows[i])) i++;
-      if (i >= rows.length) break;
-      const colIndex = buildColIndex(rows[i]);
+    if (isBowlingLabel || isBowlingHeader) {
+      // Same dual-mode: "Bowler,Overs,..." acts as its own header row.
+      let headerRow: string[];
+      if (isBowlingHeader) {
+        headerRow = row;
+      } else {
+        i++;
+        while (i < rows.length && !isBowlingHeaderRow(rows[i])) i++;
+        if (i >= rows.length) break;
+        headerRow = rows[i];
+      }
+      const colIndex = buildColIndex(headerRow);
       i++;
       const dataRows: string[][] = [];
       while (i < rows.length) {
