@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { CSVImportModal } from "@/components/csv-import/CSVImportModal";
+import { ScorecardImportModal } from "@/components/scorecard-import/ScorecardImportModal";
 import { formatDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -127,6 +128,7 @@ export default function MatchesPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [scorecardOpen, setScorecardOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const fetchMatches = useCallback(async () => {
@@ -172,6 +174,14 @@ export default function MatchesPage() {
         description={`${total} ${total === 1 ? "match" : "matches"} recorded`}
         actions={
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setScorecardOpen(true)}
+              className="border-hairline text-ink-muted hover:border-emerald-500/40 hover:text-white"
+            >
+              <Upload className="mr-1.5 h-4 w-4" />
+              Import Scorecard
+            </Button>
             <Button
               variant="outline"
               onClick={() => setImportOpen(true)}
@@ -332,6 +342,13 @@ export default function MatchesPage() {
       <CSVImportModal
         open={importOpen}
         onOpenChange={setImportOpen}
+        onSuccess={fetchMatches}
+      />
+
+      {/* CricClubs scorecard import modal */}
+      <ScorecardImportModal
+        open={scorecardOpen}
+        onOpenChange={setScorecardOpen}
         onSuccess={fetchMatches}
       />
 
