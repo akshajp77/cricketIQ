@@ -240,7 +240,7 @@ export function ScorecardImportModal({ open, onOpenChange, onSuccess }: Props) {
                 </Label>
                 <Input
                   id="sc-player-name"
-                  placeholder="e.g. Laksh Warty"
+                  placeholder="e.g. Virat Kohli"
                   value={playerName}
                   onChange={(e) => setPlayerName(e.target.value)}
                 />
@@ -256,7 +256,7 @@ export function ScorecardImportModal({ open, onOpenChange, onSuccess }: Props) {
                 </Label>
                 <Input
                   id="sc-team-name"
-                  placeholder="e.g. Dallas Orange"
+                  placeholder="e.g. Mumbai Indians"
                   value={userTeam}
                   onChange={(e) => setUserTeam(e.target.value)}
                 />
